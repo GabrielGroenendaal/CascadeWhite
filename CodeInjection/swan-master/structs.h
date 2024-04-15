@@ -42,6 +42,14 @@ enum MoveFlag
 #endif
 {
     FLAG_CONTACT = 0x0,
+    FLAG_REQUIRES_CHARGE = 0x1,
+    FLAG_RECHARGE = 0x2,
+    FLAG_BLOCKED_BY_PROTECT = 0x3,
+    FLAG_REFLECTED_BY_MAGIC_COAT = 0x4,
+    FLAG_STOLEN_BY_SNATCH = 0x5,
+    FLAG_COPIED_BY_MIRROR_MOVE = 0x6,
+    FLAG_PUNCH = 0x7,
+    FLAG_SOUND = 0x8
 };
 
 enum TypeEffectiveness
@@ -110,6 +118,7 @@ enum BattleHandlerEffect
     EFFECT_CHANGESTATSTAGE = 0xE,
     EFFECT_ABILITYPOPUPIN = 2,
     EFFECT_ABILITYPOPUPOUT = 3,
+    EFFECT_CHANGEHP = 8,
     EFFECT_ADDSIDEEFFECT = 0x19,
     EFFECT_CONSUMEITEM = 0x23,
     EFFECT_MESSAGE = 4,
@@ -453,8 +462,8 @@ struct TrainerData
 struct MainModule
 {
     BtlSetup *btlSetup;
-    char field_4;
-    char server;
+    int field_4;
+    BtlServerWk *server;
     char clients;
     char field_20;
     char field_24;
@@ -491,6 +500,18 @@ struct ConditionData
     u8 unk3;
 };
 
+struct FaintRecordUnit
+{
+    u8 count;
+    u8 fExpChecked[24];
+    u8 FaintPokeID[24];
+};
+
+struct FaintRecord
+{
+    FaintRecordUnit turnRecord[4];
+};
+
 struct HandlerParam_Header
 {
     u32 flags;
@@ -501,6 +522,17 @@ struct HandlerParam_StrParams
     u16 ID;
     int type;
     int args[8];
+};
+
+struct HandlerParam_ChangeHP
+{
+    HandlerParam_Header header;
+    u8 poke_cnt;
+    u8 fEffectDisable;
+    u8 fItemReactionDisable;
+    u8 pokeID[6];
+    u32 volume[6];
+    u32 damageCause;
 };
 
 struct HandlerParam_ChangeStatStage
@@ -531,7 +563,7 @@ struct HandlerParam_Message
     HandlerParam_StrParams str;
 };
 
- struct MoveParam
+struct MoveParam
 {
     unsigned __int16 MoveID;
     unsigned __int16 OriginalMoveID;
@@ -801,80 +833,7 @@ struct BattleParty
 
 struct BtlClientWk
 {
-    BattleParty *actPokeParty;
-    unsigned __int8 myCoverPosNum;
-    unsigned __int8 procPokeIdx;
-    char prevPokeIdx;
-    char firstPokeIdx;
-    char fStdMsgChanged;
-    char field_129;
-    char field_12A;
-    char actionParam[3];
-    u8 field_138[4];
-    int cmdQueue;
-    int ServerCmdArgs;
-    char gap144[60];
-    int serverCmd;
-    int ServerCmd;
-    int ServerCmdSeq;
-    char pokeSelectParam;
-    char pokeSelectResult;
-    char field_1A1;
-    __int16 field_1A2;
-    char field_1A4;
-    char field_1A6;
-    char field_1A7;
-    char field_1A8[3];
-    char myID;
-    char field_1AF;
-    char gap1B0;
-    char commWaitInfoOn;
-    char field_1B2;
-    char field_1B3;
-    char field_1B4;
-    char forceQuitActionSelect;
-    char cmdCheckTimingCode;
-    char currentActionCount;
-    char moveInfoPokeIdx;
-    char moveInfoMoveIdx;
-    char actSelectFlags;
-    char myChangePokeCount;
-    char field_1BC;
-    char field_1BD;
-    unsigned __int8 myChangePokePos[6];
-    char field_1C4;
-    char field_1C5;
-    char field_1C6;
-    char field_1C7;
-    char field_1C8;
-    char field_1C9;
-    char field_1CA;
-    char gap1CB[5];
-    int field_1D0;
-    char gap1D4[20];
-    __int16 field_1E8;
-    __int16 field_1EA;
-    char gap1EC[4];
-    int field_1F0;
-    char gap1F4[16];
-    int field_204;
-    char gap208[12];
-    int field_214;
-    char gap218[4];
-    char word21C;
-    int dword220;
-    int field_224;
-    int field_228;
-    int field_22C;
-    int field_230;
-    int field_234;
-    int field_238;
-    int field_23C;
-    int field_240;
-    int field_244;
-    int field_248;
-    int field_24C;
-    char field_250;
+    MainModule *mainModule;
 };
 
 struct TrainerAIEnv
@@ -1152,7 +1111,7 @@ const int chargestoneTypeChart[18][18] = {
 
 const int opelucidTypeChart[18][18] = {
     {4, 4, 4, 4, 4, 2, 4, 0, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4},
-    {8, 4, 2, 2, 4, 8, 2, 0, 8, 4, 4, 4, 4, 2, 8, 4, 8, 2},
+    {8, 4, 2, 2, 4, 8, 2, 2, 8, 4, 4, 4, 4, 2, 8, 4, 8, 2},
     {4, 8, 4, 4, 4, 2, 8, 4, 2, 4, 4, 8, 2, 4, 4, 4, 4, 4},
     {4, 4, 4, 2, 2, 2, 4, 2, 0, 4, 4, 8, 4, 4, 4, 4, 4, 8},
     {4, 4, 0, 8, 4, 8, 2, 4, 8, 8, 4, 2, 8, 4, 4, 4, 4, 4},
@@ -1209,8 +1168,6 @@ const int testTypeChart[18][18] = {
     {8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8},
     {8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8},
     {8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8}};
-
-
 
 const int FreezeDryTypeChart[18][18] = {
     {4, 4, 4, 4, 4, 2, 4, 0, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4},

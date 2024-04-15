@@ -36,7 +36,7 @@ extern "C"
     //     {
     //         attackingMon = BattleEventVar_GetValue(VAR_ATTACKING_MON);
     //         PokeParam = Handler_GetPokeParam((ServerFlow*)a2, attackingMon);
-    //         k::Printf("\n\nWe're inside the Snow Cloak Handler Function\na1 = %d\na2 = %d\na3 = %d\nAttackingMon = %d\nPokeParam = %d\nHeld Item = %d\n\n", 
+    //         k::Printf("\n\nWe're inside the Snow Cloak Handler Function\na1 = %d\na2 = %d\na3 = %d\nAttackingMon = %d\nPokeParam = %d\nHeld Item = %d\n\n",
     //             a1, a2, a3, attackingMon, PokeParam, PokeParam->HeldItem);
     //         if (PokeParam->HeldItem != 293){
     //             BattleEventVar_MulValue(VAR_RATIO, 3277);
@@ -53,7 +53,7 @@ extern "C"
     //     {
     //         attackingMon = BattleEventVar_GetValue(VAR_ATTACKING_MON);
     //         PokeParam = Handler_GetPokeParam((ServerFlow*)a2, attackingMon);
-    //         k::Printf("\n\nWe're inside the Sand Veil Handler Function\na1 = %d\na2 = %d\na3 = %d\nAttackingMon = %d\nPokeParam = %d\nHeld Item = %d\n\n", 
+    //         k::Printf("\n\nWe're inside the Sand Veil Handler Function\na1 = %d\na2 = %d\na3 = %d\nAttackingMon = %d\nPokeParam = %d\nHeld Item = %d\n\n",
     //             a1, a2, a3, attackingMon, PokeParam, PokeParam->HeldItem);
     //         if (PokeParam->HeldItem != 293){
     //             BattleEventVar_MulValue(VAR_RATIO, 3277);
@@ -72,26 +72,58 @@ extern "C"
     // a2 is the ServerFlow
     // a3 is the type of skip i think
     // a6 is supposedly the side of
-    // bool THUMB_BRANCH_HandlerUnnerveSkipCheck(int a1, int a2, int a3, int a4, u16 a5, unsigned __int8 a6)
-    // {
-    //     int MainModule; // r0
-    //     bool result; // r0
+    bool THUMB_BRANCH_SAFESTACK_HandlerUnnerveSkipCheck(int a1, int a2, int a3, int a4, u16 a5, unsigned __int8 a6)
+    {
+        int MainModule; // r0
+        bool result; // r0
 
-    //     result = 0;
-    //     if (a3 == 5)
-    //     {
-    //         MainModule = HandlerGetMainModule(a1);
-    //         k::Printf("\n a1 is %d\na2 is %d\na3 is %d\na4 is %d\na5 is %d\na6 is %d\nMainModule is %d\n", a1, a2, a3, a4, (int)a5, a6, MainModule);
-    //         if (!MainModule_IsAllyMonID(MainModule, a6))
-    //         {
-    //             return 1; // if (PML_ItemIsBerry(a5))
-    //             // {
-    //             //     return 1;
-    //             // }
-    //         }
-    //     }
-    //     return result;
-    // }
+        result = 0;
+        if (a3 == 5)
+        {
+            MainModule = HandlerGetMainModule(a1);
+            k::Printf("\n a1 is %d\na2 is %d\na3 is %d\na4 is %d\na5 is %d\na6 is %d\nMainModule is %d\n", a1, a2, a3, a4, (int)a5, a6, MainModule);
+            if (!MainModule_IsAllyMonID(MainModule, a6))
+            {
+                return 1; // if (PML_ItemIsBerry(a5))
+                // {
+                //     return 1;
+                // }
+            }
+        }
+        return result;
+    }
+
+
+    void THUMB_BRANCH_HandlerRegenerator(int a1, ServerFlow *a2, unsigned int *a3)
+    {
+        BattleMon *PokeParam;      // r6
+        unsigned int v6;           // r4
+        unsigned int v7;           // r0
+        HandlerParam_ChangeHP *v8; // r0
+        int Value;                 // [sp+0h] [bp-18h]
+
+        if (a3 == (unsigned int *)BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            PokeParam = Handler_GetPokeParam(a2, (int)a3);
+            if (!BattleMon_IsFainted(PokeParam) && !BattleMon_IsFullHP(PokeParam))
+            {
+                v6 = DivideMaxHPZeroCheck(PokeParam, 4u);
+                Value = BattleMon_GetValue(PokeParam, VALUE_MAX_HP);
+                v7 = Value - BattleMon_GetValue(PokeParam, VALUE_CURRENT_HP);
+                if (v6 > v7)
+                {
+                    v6 = v7;
+                }
+                v8 = (HandlerParam_ChangeHP *)BattleHandler_PushWork(a2, EFFECT_CHANGEHP, (int)a3);
+                v8->pokeID[0] = (int)a3;
+                v8->volume[0] = v6;
+                v8->poke_cnt = 1;
+                v8->fEffectDisable = 1;
+                BattleHandler_PopWork(a2, v8);
+            }
+        }
+    }
+
 
     // For Fluffy
     int HandlerFluffy(int a1, int a2, int a3)

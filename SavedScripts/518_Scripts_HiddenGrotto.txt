@@ -27,17 +27,12 @@ public class MainEvents {
 		int v37;
 
 		Actor.PauseAll();
-		v32 = 0;
-		v33 = 0;
-		v34 = 0;
-		v35 = 0;
-		v36 = 0;
-		v37 = 0;
-		v33 = HiddenHollow.GetParam(0);
-		v32 = HiddenHollow.GetParam(1);
-		v34 = HiddenHollow.GetParam(2);
-		v35 = HiddenHollow.GetParam(3);
-		v36 = 0;
+
+		v33 = HiddenHollow.GetParam(0); // Pokemon Species
+		v32 = HiddenHollow.GetParam(1); // Pokemon Level
+		v34 = HiddenHollow.GetParam(2); // Pokemon Forme
+		v35 = HiddenHollow.GetParam(3); // Grotto Type
+        
 		v36 |= 8;
 		v36 |= 16;
 		v36 |= 128;
@@ -81,35 +76,27 @@ public class MainEvents {
 	}
 
 	public static void main_2() { // @ 0x13b
-		int v0;
-		int v1;
 		int v38;
 
 		Actor.PauseAll();
-		v38 = 0;
 		v38 = HiddenHollow.GetParam(4);
 		Actor.Hide(224);
 		Global2807(v38, 1);
 		HiddenHollow.Reset();
-		v38 = 0;
 		Runtime.FinishSubEvents();
 		Actor.UnpauseAll();
 	}
 
 	public static void main_3() { // @ 0x17b
-		int v0;
-		int v1;
 		int v39;
 
 		Actor.PauseAll();
-		v39 = 0;
 		v39 = HiddenHollow.GetParam(5);
 		Global2807(v39, 1);
 		HiddenHollow.Reset();
 		EventFlags.Clear(2431);
 		ObjInit.SetProxyGPos(0, 15, 0, 31);
 		Records.Add(44, 1);
-		v39 = 0;
 		Runtime.FinishSubEvents();
 		Actor.UnpauseAll();
 	}
@@ -124,6 +111,7 @@ public class MainEvents {
 		ActionSequence_0230(255);
 		Actor.WaitActionFinish();
 		Sound.SEPlay(1369);
+        HiddenHollow.Reset();
 		HiddenHollow.WarpOut();
 		Runtime.FinishSubEvents();
 		Actor.UnpauseAll();
@@ -163,16 +151,10 @@ public class MainEvents {
 
 	static void sub_01dd() { // @ 0x1dd
 		int v40;
-
-		v40 = 0;
 		v40 = HiddenHollow.GetParam(6);
-		if (v40 != 1) {
-			goto LABEL_0206;
+		if (v40 == 1) {
+			ObjInit.SetProxyGPos(0, 15, 0, 12);
 		}
-		ObjInit.SetProxyGPos(0, 15, 0, 12);
-
-		LABEL_0206:
-		v40 = 0;
 	}
 
 	static meta void ActionSequence_0228(int npcId) : VActionSequence {

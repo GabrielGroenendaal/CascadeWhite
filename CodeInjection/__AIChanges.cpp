@@ -100,7 +100,7 @@ extern "C"
         }
 
         // k::Printf("\n\nTypeEffectiveness is %d\na4 is %d\nActualType is %d\na5 as int is %d\nv11 is %d\n\n", GetTypeEffectivenessAltered(a4, ActualType), a4, ActualType, (int)a5, v11);
-        //k::Printf("\nMon 1 Type 1 is %d\nMon 1 Type 2 is %d\nMon 2 Type 1 is %d\nMon 2 Type 2 is %d\n", PokeTypePair_GetType1(BattleMon_GetPokeType(a2)), PokeTypePair_GetType2(BattleMon_GetPokeType(a2)), PokeTypePair_GetType1(BattleMon_GetPokeType(a3)), PokeTypePair_GetType2(BattleMon_GetPokeType(a3)));
+        // k::Printf("\nMon 1 Type 1 is %d\nMon 1 Type 2 is %d\nMon 2 Type 1 is %d\nMon 2 Type 2 is %d\n", PokeTypePair_GetType1(BattleMon_GetPokeType(a2)), PokeTypePair_GetType2(BattleMon_GetPokeType(a2)), PokeTypePair_GetType1(BattleMon_GetPokeType(a3)), PokeTypePair_GetType2(BattleMon_GetPokeType(a3)));
 
         BattleEventVar_Push();
         ID = BattleMon_GetID(a2);
@@ -138,6 +138,36 @@ extern "C"
         return result;
     }
 
+    bool checkRetaliate(ServerFlow *a2, int MonID)
+    {
+        FaintRecord *record;
+        int turnCount;
+        int faintedId;
+        int loopCount;
+        record = Handler_GetActionRecord(a2);
+       
+        turnCount = j_j_DeadRec_GetCount_3(record, 1u);
+        loopCount = 0;
+
+
+        k::Printf("\n\nRecord is %d\nturnCount is %d\nMonID is %d\n\n", record, turnCount, MonID);
+        return true;
+        if (turnCount)
+        {
+            while (loopCount <= turnCount)
+            {
+                faintedId = j_j_FaintRecord_GetPokeID(record, 1u, loopCount);
+
+                if (MainModule_IsAllyMonID(MonID, faintedId))
+                {
+                    return true;
+                }
+                ++loopCount;
+            }
+        }
+        return false;
+    }
+
     int CheckRatio(ServerFlow *a1, BattleMon *AttackingMon, BattleMon *DefendingMon, int MoveID)
     {
 
@@ -157,7 +187,7 @@ extern "C"
         {
             if (ServerEvent_GetWeather(a1) != 1 && AttackingMon->HeldItem != 271)
             {
-                return 2048;
+                return 0;
             }
         }
         // k::Print("\nCheck #3");
@@ -211,6 +241,14 @@ extern "C"
             else
             {
                 return 4096;
+            }
+        }
+        if (MoveID == 514)
+        {
+            if (checkRetaliate(a1, AttackingMon->ID))
+            {
+                // k::Printf("\nWe have triggered this effect for retaliate with turn AI\n");
+                return 8192;
             }
         }
         // k::Print("\nCheck #9");
@@ -337,7 +375,7 @@ extern "C"
             }
             //  k::Printf("\n 1. TypeEffectiveness is: %d for Move %d \n", TypeEffectiveness, a4);
         }
-        else if (a4 == 327 || a4 == 357 || AttackingMon->Ability == 7)
+        else if (a4 == 327 || a4 == 357)
         {
             TypeEffectiveness = GetTypeEffectivenessVsMonAltered(moveParam->moveType, BattleMon_GetPokeType(DefendingMon));
             // k::Printf("\n 1. TypeEffectiveness is: %d for Move %d \n", TypeEffectiveness, a4);
@@ -388,7 +426,7 @@ extern "C"
         }
         return a3;
     }
-    int checkForBPChanges(BattleMon *AttackingMon, BattleMon *DefendingMon, int MoveID, unsigned int a4)
+    int checkForBPChanges(BattleMon *AttackingMon, BattleMon *DefendingMon, int MoveID, unsigned int a4, BtlClientWk *work)
     {
         unsigned int value;
         value = a4;
@@ -440,6 +478,14 @@ extern "C"
                 return value * 2;
             }
         }
+        if (MoveID == 514)
+        {
+            if (checkRetaliate(BattleServer_GetServerFlow(work->mainModule->server), AttackingMon->ID))
+            {
+                // k::Printf("\nWe have triggered this effect for retaliate with switch AI\n");
+                return value * 2;
+            }
+        }
         // autocrit moves
         else if (MoveID == 6 || MoveID == 190 || MoveID == 480 || MoveID == 524)
         {
@@ -483,7 +529,7 @@ extern "C"
         }
     }
 
-    bool CheckIfImmuneAbility(int Type, BattleMon *DefendingMon)
+    bool CheckIfImmuneAbility(int Type, int MoveID, BattleMon *DefendingMon)
     {
         int ability;
 
@@ -506,6 +552,10 @@ extern "C"
             return true;
         }
         if (Type == TYPE_FIRE && (ability == 18))
+        {
+            return true;
+        }
+        if (ability == 43 && getMoveFlag(MoveID, FLAG_SOUND))
         {
             return true;
         }
@@ -595,14 +645,15 @@ extern "C"
                                 if (ID == 327 || ID == 357 || MonData->Ability == 7)
                                 {
                                     TypeEffectivenessVsMon = GetTypeEffectivenessVsMonAltered(Type, PokeType);
-                                    //k::Printf("\n 2. TypeEffectivenessVsMon is: %d for Move %d \n", TypeEffectivenessVsMon, a4);
+                                    // k::Printf("\n 2. TypeEffectivenessVsMon is: %d for Move %d \n", TypeEffectivenessVsMon, a4);
                                 }
                                 else
                                 {
                                     TypeEffectivenessVsMon = GetTypeEffectivenessVsMon(Type, PokeType);
                                 }
 
-                                if (CheckIfImmuneAbility(Type, a4)){
+                                if (CheckIfImmuneAbility(Type, ID, a4))
+                                {
                                     TypeEffectivenessVsMon = 0;
                                 }
 
@@ -626,7 +677,7 @@ extern "C"
                                         v10 = BasePower << 18;
                                     LABEL_11:
                                         // k::Printf("\n Base Power of %d before any changes is %d\n", ID, v10);
-                                        v10 = checkForBPChanges(MonData, v24, ID, v10);
+                                        v10 = checkForBPChanges(MonData, v24, ID, v10, a1);
                                         // k::Printf("\n Base Power of %d after BP changes is %d\n", ID, v10);
                                         v10 = checkForTechnician(MonData, ID, v10);
                                         // k::Printf("\n Base Power of %d after Tech changes is %d\n", ID, v10);
@@ -638,7 +689,7 @@ extern "C"
                                     default:
                                         v10 = BasePower << 16;
                                         // k::Printf("\n Base Power of %d before any changes is %d\n", ID, v10);
-                                        v10 = checkForBPChanges(MonData, v24, ID, v10);
+                                        v10 = checkForBPChanges(MonData, v24, ID, v10, a1);
                                         // k::Printf("\n Base Power of %d after BP changes is %d\n", ID, v10);
                                         v10 = checkForTechnician(MonData, ID, v10);
                                         // k::Printf("\n Base Power of %d after Tech changes is %d\n", ID, v10);
@@ -725,19 +776,22 @@ extern "C"
         Type = PML_MoveGetType(wazaId);
         PokeType = BattleMon_GetPokeType(a3);
 
-        if (wazaId == 327 || wazaId == 357 || a2->Ability==7){
+        if (wazaId == 327 || wazaId == 357 || a2->Ability == 7)
+        {
             TypeEffectiveness = GetTypeEffectivenessVsMonAltered(Type, PokeType);
-            //k::Printf("\n 2. TypeEffectivenessVsMon is: %d for Move %d \n", TypeEffectiveness, wazaId);
-        } else {
+            // k::Printf("\n 2. TypeEffectivenessVsMon is: %d for Move %d \n", TypeEffectiveness, wazaId);
+        }
+        else
+        {
             TypeEffectiveness = GetTypeEffectivenessVsMon(Type, PokeType);
         }
-       
+
         if (!IsDamaging)
         {
             return 1;
         }
         // If the pokemon is immune via Type or Ability
-        if (TypeEffectiveness == 0 || CheckIfImmuneAbility(Type, a3))
+        if (TypeEffectiveness == 0 || CheckIfImmuneAbility(Type, wazaId, a3))
         {
             // Will always switch if there's another pokemon that can deal some damage
             if (CheckIfMonToSwitchToWithSEMove(a1, a3, 1))

@@ -75,7 +75,7 @@ extern "C"
 
         // Trick Room Setter
         // Checks ZoneId for Relic Castle, currently
-        if (zoneId == 503 || zoneId == 504 || zoneId == 505 || (zoneId >= 160 && zoneId <= 190))
+        if (zoneId == 503 || zoneId == 504 || zoneId == 505 || (zoneId >= 255 && zoneId <= 262) || (zoneId >= 160 && zoneId <= 190))
         {
             ServerDisplay_AddCommon(a1->serverCommandQueue, 48, 1, 0, 433, 0, 0);
             bhwork = BattleHandler_PushWork(a1, 4, 0);
@@ -93,7 +93,7 @@ extern "C"
             ServerControl_FieldEffectCore(a1, 1, 255, 0);
         }
         // Celestial Tower
-        else if (zoneId == 339 || zoneId == 338 || zoneId == 340 || zoneId == 341)
+        else if (zoneId == 339 || zoneId == 338 || zoneId == 340 || zoneId == 341 || zoneId == 462 || (zoneId >= 510 && zoneId <= 514) || (zoneId >= 569 && zoneId <= 572))
         {
             bhwork = BattleHandler_PushWork(a1, 4, 0);
             BattleHandler_StrSetup((u16 *)bhwork + 2, 1u, 205);
@@ -383,7 +383,7 @@ extern "C"
         {
             v3 = chargestoneTypeChart[a1][a2];
         }
-        else if (zoneId == 339 || zoneId == 338 || zoneId == 340 || zoneId == 341)
+       else if (zoneId == 339 || zoneId == 338 || zoneId == 340 || zoneId == 341 || zoneId == 462 || (zoneId >= 510 && zoneId <= 514) || (zoneId >= 569 && zoneId <= 572))
         {
             v3 = celestialTypeChart[a1][a2];
         }
