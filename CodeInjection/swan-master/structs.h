@@ -31,8 +31,10 @@ enum BattleEventType
 {
     BattleEvent_CalcSpeed = 0x13,
     BattleEvent_UncategorizedMoveNoTarget = 0xA1,
+    BattleEvent_BeforeAttackerPower = 0x39,
     BattleEvent_BeforeDefenderGuard = 0x3A,
     BattleEvent_DefenderGuard = 0x3C,
+    BattleEvent_AttackerPower = 0x3B,
     BattleEvent_CheckTypeEffectiveness = 0x3E
 };
 
@@ -90,11 +92,13 @@ enum BattleEventVar
     VAR_SPEED = 0x2F,
     VAR_MOVEPOWER = 0x30,
     VAR_MOVEPOWERRATIO = 0x31,
+    VAR_POWER = 0x33,
     VAR_RATIO = 0x35,
     VAR_DAMAGE = 0x37,
     VAR_TYPEEFFECTIVENESS = 0x38,
     VAR_WEATHER = 0x39,
     VAR_ENDURE = 0x3A,
+    VAR_SWAP_POKE_ID = 0x3B,
     VAR_BATTLE_MON_STAT = 0x3C,
     VAR_BATTLE_MON_STAT_SWAP_FLAG = 0x3D,
     VAR_NOEFFECTFLAG = 0x40,

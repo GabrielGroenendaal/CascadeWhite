@@ -81,13 +81,25 @@ extern "C"
         if (a3 == 5)
         {
             MainModule = HandlerGetMainModule(a1);
-            k::Printf("\n a1 is %d\na2 is %d\na3 is %d\na4 is %d\na5 is %d\na6 is %d\nMainModule is %d\n", a1, a2, a3, a4, (int)a5, a6, MainModule);
+            //k::Printf("\n a1 is %d\na2 is %d\na3 is %d\na4 is %d\na5 is %d\na6 is %d\nMainModule is %d\n", a1, a2, a3, a4, (int)a5, a6, MainModule);
             if (!MainModule_IsAllyMonID(MainModule, a6))
             {
-                return 1; // if (PML_ItemIsBerry(a5))
-                // {
-                //     return 1;
-                // }
+                if (PML_ItemIsBerry(a5) || 
+                    a5 == 290 ||
+                    (a5 >= 545 && a5 <= 564) ||
+                    a5 == 292 ||
+                    a5 == 291 || 
+                    a5 == 274 ||
+                    a5 == 542 ||
+                    a5 == 294 || 
+                    a5 == 543 || 
+                    a5 == 275 || 
+                    a5 == 219 || 
+                    a5 == 214 ||
+                    a5 == 271 ||
+                    a5 == 541) {
+                          return 1; // if (PML_ItemIsBerry(a5))
+                    }
             }
         }
         return result;
@@ -702,6 +714,9 @@ extern "C"
         return result;
     }
 
+    // int HandlerBodyPress(int a1, int a2, int a3) {
+
+    // }
     // int HandlerNewTeleport()
     // {
     //     HandlerParam_AddPosEffect *v5;     // r6
@@ -746,7 +761,9 @@ extern "C"
         {
             {0x96, (MOVE_HANDLER_FUNC)HandlerMeteorBeam},
             {0x3E, (MOVE_HANDLER_FUNC)NewHandlerSkyUppercut}, // BattleEvent_CheckTypeEffectiveness
-            {0x3E, (MOVE_HANDLER_FUNC)HandlerFreezeDry}};
+            {0x3E, (MOVE_HANDLER_FUNC)HandlerFreezeDry},
+            //{0x39, (MOVE_HANDLER_FUNC)HandlerBodyPress}
+            };
 
     // Meteor Beam
     int *THUMB_BRANCH_EventAddFreezeShock(unsigned int *a1)
@@ -780,4 +797,9 @@ extern "C"
         *a1 = 1;
         return (int *)&MoveTriggerTable[2].triggerValue;
     }
+
+    // int *THUMB_BRANCH_EventAddSwallow(unsigned int *a1){
+    //     *a1 = 1;
+    //     return (int *)&MoveTriggerTable[3].triggerValue;
+    // }
 }

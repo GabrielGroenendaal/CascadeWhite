@@ -864,6 +864,27 @@ public class MainEvents {
 		v40 = 0;
 	}
 
+	static void clearGatekeepers(){
+		if (EventFlags.Get(1986)) {
+			EventFlags.Set(1986);
+		}
+		if (EventFlags.Get(1982)){
+			EventFlags.Set(1982);
+		}
+		if (EventFlags.Get(2088)){
+			EventFlags.Set(2088);
+		}
+		if (EventFlags.Get(2087)){
+			EventFlags.Set(2087);
+		}
+		if (EventFlags.Get(1731)){
+			EventFlags.Set(1731);
+		}
+		if (EventFlags.Get(1730)){
+			EventFlags.Set(1730);
+		}
+	}
+
 	static meta void ActionSequence_09a8(int npcId) : VActionSequence {
 		Action004b(1);
 	}

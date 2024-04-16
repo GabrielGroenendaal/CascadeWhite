@@ -57,7 +57,7 @@ extern "C"
         BattleFieldStatus *FieldStatus; // r0
         TrainerBattleSetup **trainerSetups;
         TrainerBattleSetup *currentTrainer;
-         PlayerState *playerState;
+        PlayerState *playerState;
         int zoneId;
         int trainerId;
         int trainerClass;
@@ -66,7 +66,6 @@ extern "C"
         // zoneId = (int)FieldStatus->ZoneID;
         playerState = GameData_GetPlayerState(*(GameData **)(g_GameBeaconSys + 4));
         zoneId = playerState->ZoneID;
-
 
         trainerSetups = a1->mainModule->btlSetup->TrainerSetup;
         currentTrainer = trainerSetups[2];
@@ -107,10 +106,11 @@ extern "C"
             BattleHandler_StrSetup((u16 *)bhwork + 2, 1u, 206);
             BattleHandler_PopWork(a1, (u32 *)bhwork);
             ServerControl_FieldEffectCore(a1, 1, 255, 0);
-        } 
+        }
 
         // Skyla' Gym
-        else if (zoneId == 108) {
+        else if (zoneId == 108)
+        {
             bhwork = BattleHandler_PushWork(a1, 4, 0);
             BattleHandler_StrSetup((u16 *)bhwork + 2, 1u, 207);
             BattleHandler_PopWork(a1, (u32 *)bhwork);
@@ -270,6 +270,71 @@ extern "C"
         return (unsigned __int16)v10;
     }
 
+    int THUMB_BRANCH_ServerEvent_GetAttackPower(
+        ServerFlow *a1,
+        BattleMon *AttackingMon,
+        BattleMon *DefendingMon,
+        MoveParam *a4,
+        int criticalFlag)
+    {
+        BattleMonValue v8;         // r4
+        int ID;                    // r0
+        int v10;                   // r0
+        int Value;                 // r1
+        unsigned __int16 RealStat; // r0
+        int v13;                   // r4
+        int v14;                   // r4
+        int v15;                   // r0
+        int v16;                   // r4
+
+        v8 = VALUE_SPECIAL_ATTACK_STAT;
+        if (PML_MoveGetCategory(a4->MoveID) != 2)
+        {
+            v8 = VALUE_ATTACK_STAT;
+        }
+        if (a4->MoveID == 206) {
+            v8 = VALUE_DEFENSE_STAT;
+        }
+
+        BattleEventVar_Push();
+        ID = BattleMon_GetID(AttackingMon);
+        BattleEventVar_SetConstValue(VAR_ATTACKING_MON, ID);
+        v10 = BattleMon_GetID(DefendingMon);
+        BattleEventVar_SetConstValue(VAR_DEFENDING_MON, v10);
+        BattleEventVar_SetValue(VAR_SWAP_POKE_ID, 31);
+        BattleEventVar_SetValue(VAR_GENERAL_USE_FLAG, 0);
+        BattleEvent_CallHandlers(a1, BattleEvent_BeforeAttackerPower);
+        Value = BattleEventVar_GetValue(VAR_SWAP_POKE_ID);
+        if (Value != 31 || a4->MoveID==492)
+        {
+            AttackingMon = PokeCon_GetPokeParam(a1->pokeCon, Value);
+        }
+        if (BattleEventVar_GetValue(VAR_GENERAL_USE_FLAG))
+        {
+            RealStat = BattleMon_GetRealStat(AttackingMon, v8);
+        }
+        else if (criticalFlag)
+        {
+            RealStat = BattleMon_GetStatsForCritDamage(AttackingMon, v8);
+        }
+        else
+        {
+            RealStat = BattleMon_GetValue(AttackingMon, v8);
+        }
+        v13 = RealStat;
+        BattleEventVar_SetConstValue(VAR_MOVEID, a4->MoveID);
+        BattleEventVar_SetConstValue(VAR_MOVETYPE, a4->moveType);
+        BattleEventVar_SetConstValue(VAR_MOVECATEGORY, a4->category);
+        BattleEventVar_SetValue(VAR_POWER, v13);
+        BattleEventVar_SetMulValue(VAR_RATIO, 4096, 410, 0x20000);
+        BattleEvent_CallHandlers(a1, BattleEvent_AttackerPower);
+        v14 = BattleEventVar_GetValue(VAR_POWER);
+        v15 = BattleEventVar_GetValue(VAR_RATIO);
+        v16 = fixed_round(v14, v15);
+        BattleEventVar_Pop();
+        return v16;
+    }
+
     int THUMB_BRANCH_ServerEvent_GetTargetDefenses(ServerFlow *a1, BattleMon *a2, BattleMon *a3, MoveParam *a4, int a5)
     {
         int v7;                    // r4
@@ -301,7 +366,7 @@ extern "C"
         BattleEventVar_SetValue(VAR_BATTLE_MON_STAT_SWAP_FLAG, 0);
         BattleEventVar_SetRewriteOnceValue(VAR_GENERAL_USE_FLAG, 0);
         BattleEvent_CallHandlers(a1, BattleEvent_BeforeDefenderGuard);
-        if ((BattleEventVar_GetValue(VAR_BATTLE_MON_STAT_SWAP_FLAG) & 1) != 0)
+        if ((BattleEventVar_GetValue(VAR_BATTLE_MON_STAT_SWAP_FLAG) & 1) != 0 || a4->MoveID == 473 || a4 ->MoveID == 540)
         {
             if (v7 == 9)
             {
@@ -383,7 +448,7 @@ extern "C"
         {
             v3 = chargestoneTypeChart[a1][a2];
         }
-       else if (zoneId == 339 || zoneId == 338 || zoneId == 340 || zoneId == 341 || zoneId == 462 || (zoneId >= 510 && zoneId <= 514) || (zoneId >= 569 && zoneId <= 572))
+        else if (zoneId == 339 || zoneId == 338 || zoneId == 340 || zoneId == 341 || zoneId == 462 || (zoneId >= 510 && zoneId <= 514) || (zoneId >= 569 && zoneId <= 572))
         {
             v3 = celestialTypeChart[a1][a2];
         }
