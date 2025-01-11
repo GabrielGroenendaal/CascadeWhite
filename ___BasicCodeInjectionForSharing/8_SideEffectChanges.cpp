@@ -4,6 +4,11 @@
 
 // FIELD EFFECT EXPANSION
 
+extern "C" int THUMB_BRANCH_TrainerInfo_GetRegion(UnityTowerVisitor *a1)
+{
+  return a1->field_1A;
+};
+
 extern "C"
 {
 
@@ -360,14 +365,14 @@ extern "C"
                 v7->sickCode = CONDITION_SLEEP;
                 v7->poke_cnt = 1;
                 v7->pokeID[0] = pokemonSlot;
-                k::Printf("TERRAIN CURE\n");
+               // k::Printf("TERRAIN CURE\n");
                 BattleHandler_PopWork(serverFlow, v7);
             }
         }
     }
     void HandlerElectricTerrainCheckSleep(BattleEventItem *a1, ServerFlow *serverFlow, int pokemonSlot, int *work)
     {
-        k::Printf("HandlerElectricTerrainEndSleep\n");
+       // k::Printf("HandlerElectricTerrainEndSleep\n");
         if (BattleField_GetTerrain() != TERRAIN_ELECTRIC)
             return;
 
@@ -475,7 +480,7 @@ extern "C"
             return;
 
         int currentMon = BattleEventVar_GetValue(VAR_DEFENDING_MON);
-        k::Printf("PREVENT PRIO -> TERRAIN: %d | ATTACKER: %d | DEFENDER: %d\n", BattleField_GetTerrain(), BattleEventVar_GetValue(VAR_ATTACKING_MON), currentMon);
+        //k::Printf("PREVENT PRIO -> TERRAIN: %d | ATTACKER: %d | DEFENDER: %d\n", BattleField_GetTerrain(), BattleEventVar_GetValue(VAR_ATTACKING_MON), currentMon);
         if (currentMon == BattleEventVar_GetValue(VAR_ATTACKING_MON))
             return;
 
@@ -492,10 +497,10 @@ extern "C"
 
             int priority = (action_order[orderIdx].field_8 >> 16) & 0x3FFFFF;
             priority -= 7;
-            k::Printf("PRIO: %d\n", priority);
+           // k::Printf("PRIO: %d\n", priority);
             int special_priority = ((action_order[orderIdx].field_8 >> 13) & 0x7); // special priority takes into account item & ability prio boosts (1 = no added prio)
             special_priority -= 1;
-            k::Printf("SPECIAL PRIO: %d\n", special_priority);
+           // k::Printf("SPECIAL PRIO: %d\n", special_priority);
             priority += special_priority;
 
             if (priority > 0)
@@ -904,7 +909,7 @@ extern "C"
     void THUMB_BRANCH_ServerControl_FieldEffectEnd(ServerFlow *serverFlow, BattleFieldEffect fieldEffect)
     {
         int msgID = -1;
-        k::Printf("END FIELD EFFECT: %d\n", fieldEffect);
+        //k::Printf("END FIELD EFFECT: %d\n", fieldEffect);
         if (fieldEffect <= FLDEFF_TERRAIN)
         {
             switch (fieldEffect)
@@ -928,7 +933,7 @@ extern "C"
                 break;
             }
         }
-        k::Printf("MSG ID: %d\n", msgID);
+        //k::Printf("MSG ID: %d\n", msgID);
         if (msgID >= 0)
         {
             ServerDisplay_AddMessageImpl(serverFlow->serverCommandQueue, 90, msgID, 0xFFFF0000);
@@ -981,7 +986,7 @@ extern "C"
             if (grounded)
             {
                 ServerDisplay_AddMessageImpl(serverFlow->serverCommandQueue, 91, 1083, pokemonIDs[i], -65536);
-                k::Printf("GRAVITY TEXT\n");
+              //  k::Printf("GRAVITY TEXT\n");
                 ServerEvent_GroundedByGravity(serverFlow, battleMon);
             }
         }
@@ -1054,6 +1059,10 @@ extern "C"
             // if (DoesItemPreventHazardEffects(BattleMon_GetHeldItem(currentMon))) // Heavy-Duty Boots check
             //     return;
 
+            if (BattleMon_GetHeldItem(currentMon) == IT0293_SAFETY_GOGGLES || BattleMon_GetValue(currentMon, VALUE_EFFECTIVE_ABILITY) == ABIL142_OVERCOAT){
+                return;
+            }
+
             int spikeLayers = BattleSideStatus_GetCountFromBattleEventItem(a1, currentSide); // New Definition
             int dmgPercent = 0;
             switch (spikeLayers)
@@ -1114,8 +1123,9 @@ extern "C"
             }
             else
             {
-                // if (DoesItemPreventHazardEffects(BattleMon_GetHeldItem(currentMon))) // Heavy-Duty Boots check
-                //     return;
+                           if (BattleMon_GetHeldItem(currentMon) == IT0293_SAFETY_GOGGLES || BattleMon_GetValue(currentMon, VALUE_EFFECTIVE_ABILITY) == ABIL142_OVERCOAT){
+                return;
+            }
 
                 v10 = (HandlerParam_AddCondition *)BattleHandler_PushWork(serverFlow, EFFECT_ADDCONDITION, 31);
                 v10->sickID = CONDITION_POISON;
@@ -1152,8 +1162,9 @@ extern "C"
         if (currentSide == GetSideFromMonID(currentSlot))
         {
             BattleMon *currentMon = Handler_GetBattleMon(serverFlow, currentSlot);
-            // if (DoesItemPreventHazardEffects(BattleMon_GetHeldItem(currentMon))) // Heavy-Duty Boots check
-            //     return;
+                        if (BattleMon_GetHeldItem(currentMon) == IT0293_SAFETY_GOGGLES || BattleMon_GetValue(currentMon, VALUE_EFFECTIVE_ABILITY) == ABIL142_OVERCOAT){
+                return;
+            }
 
             int pokeType = BattleMon_GetPokeType(currentMon);
             TypeEffectiveness effectiveness = (TypeEffectiveness)GetTypeEffectivenessVsMon(TYPE_FLYING, pokeType);
@@ -1231,23 +1242,46 @@ extern "C"
     void HandlerSideStickyWeb(BattleEventItem *a1, ServerFlow *serverFlow, int currentSide, int *work)
     {
         HandlerParam_ChangeStatStage *v3;
+        HandlerParam_Message *bhwork;
+        HandlerParam_ChangeStatStage *v6;
 
+        
         int currentSlot = BattleEventVar_GetValue(VAR_MON_ID);
         if (currentSide == GetSideFromMonID(currentSlot))
         {
             BattleMon *currentMon = Handler_GetBattleMon(serverFlow, currentSlot);
-            // if (DoesItemPreventHazardEffects(BattleMon_GetHeldItem(currentMon))) // Heavy-Duty Boots check
-            //     return;
+                        if (BattleMon_GetHeldItem(currentMon) == IT0293_SAFETY_GOGGLES || BattleMon_GetValue(currentMon, VALUE_EFFECTIVE_ABILITY) == ABIL142_OVERCOAT){
+                return;
+            }
 
             if (Handler_CheckFloating(serverFlow, currentSlot))
                 return;
 
+            bhwork = (HandlerParam_Message *)BattleHandler_PushWork(serverFlow, EFFECT_MESSAGE, 0);
+            BattleHandler_StrSetup(&bhwork->str, 1u, 227);
+            BattleHandler_AddArg(&bhwork->str, currentSlot);
+            BattleHandler_PopWork(serverFlow, bhwork);
+
             v3 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(serverFlow, EFFECT_CHANGESTATSTAGE, currentSlot);
+            v3->header.flags |= 0x08000000;
             v3->poke_cnt = 1;
             v3->pokeID[0] = currentSlot;
+            v3->fMoveAnimation = 1;
             v3->rankType = STATSTAGE_SPEED;
             v3->rankVolume = -1;
             BattleHandler_PopWork(serverFlow, v3);
+
+            // if (currentMon->Ability == ABIL128_DEFIANT)
+            // {
+            //     v6 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(serverFlow, EFFECT_CHANGESTATSTAGE, currentSlot);
+            //     v6->header.flags |= 0x800000u;
+            //     v6->rankType = STATSTAGE_ATTACK;
+            //     v6->rankVolume = 2;
+            //     v6->fMoveAnimation = 1;
+            //     v6->poke_cnt = 1;
+            //     v6->pokeID[0] = currentSlot;
+            //     BattleHandler_PopWork(serverFlow, v6);
+            // }
         }
     }
     BattleEventHandlerTableEntry SideStickyWebHandlers[] = {
@@ -1302,7 +1336,8 @@ extern "C"
     void HandlerSideOppressive(BattleEventItem *a1, ServerFlow *serverFlow, int currentSide, int *work)
     {
         HandlerParam_ChangeStatStage *v3;
-
+        HandlerParam_ChangeStatStage *v6;
+        
         int currentSlot = BattleEventVar_GetValue(VAR_MON_ID);
         if (currentSide == GetSideFromMonID(currentSlot))
         {
@@ -1311,16 +1346,31 @@ extern "C"
             //     return;
 
             v3 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(serverFlow, EFFECT_CHANGESTATSTAGE, currentSlot);
+            v3->header.flags |= 0x04000000;
             v3->poke_cnt = 1;
             v3->pokeID[0] = currentSlot;
+            v3->fMoveAnimation = 1;
             v3->rankType = GetHighestStat(currentMon);
             v3->rankVolume = -2;
             BattleHandler_PopWork(serverFlow, v3);
+
+            // if (currentMon->Ability == ABIL128_DEFIANT)
+            // {
+            //     v6 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(serverFlow, EFFECT_CHANGESTATSTAGE, currentSlot);
+            //     v6->header.flags |= 0x800000u;
+            //     v6->rankType = STATSTAGE_ATTACK;
+            //     v6->rankVolume = 2;
+            //     v6->fMoveAnimation = 1;
+            //     v6->poke_cnt = 1;
+            //     v6->pokeID[0] = currentSlot;
+            //     BattleHandler_PopWork(serverFlow, v6);
+            // }
         }
     }
     BattleEventHandlerTableEntry SideOppressiveHandlers[] = {
         {EVENT_SWITCH_IN, HandlerSideOppressive}, // Rapid Spin implementation is in HandlerRapidSpin
     };
+
     BattleEventHandlerTableEntry *EventAddSideOppressive(int *a1)
     {
         *a1 = 1;
@@ -1586,7 +1636,7 @@ extern "C"
 
         if (currentSlot == BattleEventVar_GetValue(VAR_ATTACKING_MON))
         {
-            k::Printf("\n\nThis code is active!\n\n");
+         //   k::Printf("\n\nThis code is active!\n\n");
             BattleMon *currentMon = Handler_GetBattleMon(serverFlow, currentSlot);
             if (BattleMon_CheckIfMoveCondition(currentMon, CONDITION_LEECHSEED))
             {

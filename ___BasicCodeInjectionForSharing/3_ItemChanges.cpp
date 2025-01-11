@@ -3,14 +3,18 @@
 
 extern "C"
 {
+    int THUMB_BRANCH_sub_2009A0C(int *a1)
+{
+  return *(a1 + 419);
+}
 
     bool THUMB_BRANCH_SAFESTACK_BattleMon_CheckIfMoveCondition(BattleMon *a1, MoveCondition a2)
     {
-        if (a1->HeldItem == 289 && a2 == CONDITION_TAUNT)
-        {
-            return true;
-        }
-        else if (a2 == CONDITION_BLOCK && ((a1->Conditions[CONDITION_CURSE] & 7) != 0))
+        // if (a1->HeldItem == 289 && a2 == CONDITION_TAUNT)
+        // {
+        //     return true;
+        // }
+        if (a2 == CONDITION_BLOCK && ((a1->Conditions[CONDITION_CURSE] & 7) != 0))
         {
             return true;
         }
@@ -119,88 +123,6 @@ extern "C"
             BattleHandler_AddArg(&v6->exStr, a3);
             SubID = BattleEventItem_GetSubID(a1);
             BattleHandler_AddArg(&v6->exStr, SubID);
-            BattleHandler_PopWork(a2, v6);
-        }
-    }
-
-    void HandlerMysteriousDevice(BattleEventItem *a1, ServerFlow *a2, int a3)
-    {
-        BattleMon *PokeParam;
-
-        if (a3 == BattleEventVar_GetValue(VAR_MON_ID))
-        {
-            PokeParam = Handler_GetBattleMon(a2, a3);
-            if (BattleMon_IsStatChangeValid(PokeParam, 1u, 1) || BattleMon_IsStatChangeValid(PokeParam, 3u, 1) || BattleMon_IsStatChangeValid(PokeParam, 6u, -1))
-            {
-                ItemEvent_PushRun(a1, a2, a3);
-            }
-        }
-    }
-
-    void HandlerMysteriousDeviceUse(int a1, ServerFlow *a2, unsigned int *a3)
-    {
-        HandlerParam_ChangeStatStage *v5;
-        HandlerParam_ChangeStatStage *v6;
-        HandlerParam_ConsumeItem *v7; // r6
-        int SubID;                    // r0
-
-        if ((int)a3 == BattleEventVar_GetValue(VAR_MON_ID))
-        {
-            v5 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
-            v5->poke_cnt = 1;
-            v5->pokeID[0] = (int)a3;
-            v5->rankType = STATSTAGE_ATTACK;
-            v5->rankVolume = 1;
-            BattleHandler_PopWork(a2, v5);
-            v6 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
-            v6->poke_cnt = 1;
-            v6->pokeID[0] = (int)a3;
-            v6->rankType = STATSTAGE_SPECIAL_ATTACK;
-            v6->rankVolume = 1;
-            BattleHandler_PopWork(a2, v6);
-            v6 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
-            v6->poke_cnt = 1;
-            v6->pokeID[0] = (int)a3;
-            v6->rankType = STATSTAGE_ACCURACY;
-            v6->rankVolume = -1;
-            BattleHandler_PopWork(a2, v6);
-        }
-    }
-
-    void HandlerColressDevice(BattleEventItem *a1, ServerFlow *a2, int a3)
-    {
-        BattleMon *PokeParam;
-
-        if (a3 == BattleEventVar_GetValue(VAR_MON_ID))
-        {
-            PokeParam = Handler_GetBattleMon(a2, a3);
-            if (BattleMon_IsStatChangeValid(PokeParam, 1u, 1) || BattleMon_IsStatChangeValid(PokeParam, 3u, 1))
-            {
-                ItemEvent_PushRun(a1, a2, a3);
-            }
-        }
-    }
-
-    void HandlerColressDeviceUse(int a1, ServerFlow *a2, unsigned int *a3)
-    {
-        HandlerParam_ChangeStatStage *v5;
-        HandlerParam_ChangeStatStage *v6;
-        HandlerParam_ConsumeItem *v7; // r6
-        int SubID;                    // r0
-
-        if ((int)a3 == BattleEventVar_GetValue(VAR_MON_ID))
-        {
-            v5 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
-            v5->poke_cnt = 1;
-            v5->pokeID[0] = (int)a3;
-            v5->rankType = STATSTAGE_ATTACK;
-            v5->rankVolume = 1;
-            BattleHandler_PopWork(a2, v5);
-            v6 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
-            v6->poke_cnt = 1;
-            v6->pokeID[0] = (int)a3;
-            v6->rankType = STATSTAGE_SPECIAL_ATTACK;
-            v6->rankVolume = 1;
             BattleHandler_PopWork(a2, v6);
         }
     }
@@ -393,7 +315,7 @@ extern "C"
             k::Printf("\nWe are inside the first loop of logic in the Blunder Policy Handler\n");
 
             BattleMon *battleMon = Handler_GetBattleMon(serverFlow, pokemonSlot);
-            if (BattleMon_IsStatChangeValid(battleMon, STATSTAGE_SPEED, 2))
+            if (BattleMon_GetTurnFlag(battleMon, TURNFLAG_MOVEFAILED) && BattleMon_IsStatChangeValid(battleMon, STATSTAGE_SPEED, 2))
             {
                 ItemEvent_PushRun(battleEventItem, serverFlow, pokemonSlot);
             }
@@ -412,6 +334,25 @@ extern "C"
             speedBoost->rankType = STATSTAGE_SPEED;
             speedBoost->rankVolume = 2;
             BattleHandler_PopWork(a2, speedBoost);
+        }
+    }
+
+    void HandlerAttackInsuranceUse(BattleEventItem *battleEventItem, ServerFlow *a2, int pokemonSlot, int *work)
+    {
+        HandlerParam_Damage *damage;
+        int target;
+        BattleMon *defendingMon;
+
+        if (pokemonSlot == BattleEventVar_GetValue(VAR_MON_ID) && PML_MoveIsDamaging(BattleEventVar_GetValue(VAR_MOVE_ID)))
+        {
+            defendingMon = Handler_GetBattleMon(a2, BattleEventVar_GetValue(VAR_DEFENDING_MON));
+
+            damage = (HandlerParam_Damage *)BattleHandler_PushWork(a2, EFFECT_DAMAGE, pokemonSlot);
+            damage->pokeID = BattleEventVar_GetValue(VAR_DEFENDING_MON);
+            damage->damage = DivideMaxHPZeroCheck(defendingMon, 8u);
+            BattleHandler_StrSetup(&damage->exStr, 2u, 1237);
+            BattleHandler_AddArg(&damage->exStr, damage->pokeID);
+            BattleHandler_PopWork(a2, damage);
         }
     }
 
@@ -477,13 +418,11 @@ extern "C"
         }
     }
 
-
     typedef struct
     {
         BattleEventType triggerValue;
         ITEM_HANDLER_FUNC function;
     } ITEM_TRIGGERTABLE;
-
 
     ITEM_TRIGGERTABLE MarangaBerryHandlers[] = {
         {EVENT_MOVE_DAMAGE_REACTION_1, (ITEM_HANDLER_FUNC)HandlerMarangaBerryDamageReaction},
@@ -491,19 +430,21 @@ extern "C"
         {EVENT_USE_ITEM_TEMP, (ITEM_HANDLER_FUNC)HandlerMarangaBerryUse},
     };
 
-    ITEM_TRIGGERTABLE *EventAddMarangaBerry(int *a1)
+    // Maranga Berry
+    ITEM_TRIGGERTABLE *EventAddWikiBerry(int *a1)
     {
         *a1 = ARRAY_COUNT(MarangaBerryHandlers);
         return MarangaBerryHandlers;
     }
 
-   ITEM_TRIGGERTABLE KeeBerryHandlers[] = {
+    ITEM_TRIGGERTABLE KeeBerryHandlers[] = {
         {EVENT_MOVE_DAMAGE_REACTION_1, (ITEM_HANDLER_FUNC)HandlerKeeBerryDamageReaction},
         {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerKeeBerryUse},
         {EVENT_USE_ITEM_TEMP, (ITEM_HANDLER_FUNC)HandlerKeeBerryUse},
     };
 
-    ITEM_TRIGGERTABLE *EventAddKeeBerry(int *a1)
+    // Kee Berry
+    ITEM_TRIGGERTABLE *EventAddAguavBerry(int *a1)
     {
         *a1 = ARRAY_COUNT(KeeBerryHandlers);
         return KeeBerryHandlers;
@@ -653,40 +594,6 @@ extern "C"
     }
 
     //
-    // MYSTERIOUS DEVICE / COLRESS PROTOTYPE
-    //
-    ITEM_TRIGGERTABLE MysteriousDeviceHandlers[] = {
-        {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerMysteriousDevice},   // 24
-        {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerMysteriousDeviceUse}, // 25
-    };
-
-    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddQuickPowder(_DWORD *a1)
-    {
-        *a1 = 2;
-        return MysteriousDeviceHandlers;
-    }
-
-    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddPowerWeight(_DWORD *a1)
-    {
-        *a1 = 2;
-        return MysteriousDeviceHandlers;
-    }
-
-    //
-    // COLRESS INVENTION
-    //
-    ITEM_TRIGGERTABLE ColressDeviceHandlers[] = {
-        {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerColressDevice},   // 24
-        {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerColressDeviceUse}, // 25
-    };
-
-    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddPowerBand(_DWORD *a1)
-    {
-        *a1 = 2;
-        return ColressDeviceHandlers;
-    }
-
-    //
     // LUCKY CHARM
     //
     ITEM_TRIGGERTABLE LuckyCharmHandlers[] = {
@@ -720,12 +627,13 @@ extern "C"
     //
     ITEM_TRIGGERTABLE BlunderPolicyHandlers[] = {
         {EVENT_MOVE_EXECUTE_NOEFFECT, (ITEM_HANDLER_FUNC)HandlerBlunderPolicyCheckMiss}, // 37
+        {EVENT_MOVE_EXECUTE_END, (ITEM_HANDLER_FUNC)HandlerBlunderPolicyCheckMiss},      // 37
         {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerBlunderPolicyUse},                    // 38
     };
 
     ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddLuckyPunch(_DWORD *a1)
     {
-        *a1 = 2;
+        *a1 = 3;
         return BlunderPolicyHandlers;
     }
 
@@ -741,5 +649,655 @@ extern "C"
     {
         *a1 = 2;
         return SafetyGogglesHandlers;
+    }
+
+    void HandlerProtoBooster(BattleEventItem *a1, ServerFlow *a2, int a3)
+    {
+        BattleMon *PokeParam;
+
+        if (a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            PokeParam = Handler_GetBattleMon(a2, a3);
+            if (BattleMon_IsStatChangeValid(PokeParam, 1u, 1) || BattleMon_IsStatChangeValid(PokeParam, 3u, 1) || BattleMon_IsStatChangeValid(PokeParam, 6u, -1))
+            {
+                ItemEvent_PushRun(a1, a2, a3);
+            }
+        }
+    }
+
+    void HandlerProtoBoosterUse(int a1, ServerFlow *a2, unsigned int *a3)
+    {
+        HandlerParam_ChangeStatStage *v5;
+        HandlerParam_ChangeStatStage *v6;
+        HandlerParam_ConsumeItem *v7; // r6
+        HandlerParam_Message *v8;
+        int SubID; // r0
+
+        if ((int)a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            v5 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v5->poke_cnt = 1;
+            v5->pokeID[0] = (int)a3;
+            v5->rankType = STATSTAGE_ATTACK;
+            v5->rankVolume = 1;
+            BattleHandler_PopWork(a2, v5);
+            v6 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v6->poke_cnt = 1;
+            v6->pokeID[0] = (int)a3;
+            v6->rankType = STATSTAGE_SPECIAL_ATTACK;
+            v6->rankVolume = 1;
+            BattleHandler_PopWork(a2, v6);
+            v6 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v6->poke_cnt = 1;
+            v6->pokeID[0] = (int)a3;
+            v6->rankType = STATSTAGE_ACCURACY;
+            v6->rankVolume = -1;
+            BattleHandler_PopWork(a2, v6);
+        }
+    }
+
+    void HandlerCLRSBooster(BattleEventItem *a1, ServerFlow *a2, int a3)
+    {
+        BattleMon *PokeParam;
+
+        if (a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            PokeParam = Handler_GetBattleMon(a2, a3);
+            if (BattleMon_IsStatChangeValid(PokeParam, 1u, 1) || BattleMon_IsStatChangeValid(PokeParam, 3u, 1))
+            {
+                ItemEvent_PushRun(a1, a2, a3);
+            }
+        }
+    }
+
+    void HandlerCLRSBoosterUse(int a1, ServerFlow *a2, unsigned int *a3)
+    {
+        HandlerParam_ChangeStatStage *v5;
+        HandlerParam_ChangeStatStage *v6;
+        HandlerParam_ConsumeItem *v7; // r6
+        HandlerParam_Message *v8;
+        int SubID; // r0
+
+        if ((int)a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            v8 = (HandlerParam_Message *)BattleHandler_PushWork(a2, EFFECT_MESSAGE, (int)a3);
+            BattleHandler_StrSetup(&v8->str, 2u, 1192);
+            BattleHandler_AddArg(&v8->str, (int)a3);
+            BattleHandler_AddArg(&v8->str, BattleEventItem_GetSubID((BattleEventItem *)a1));
+            BattleHandler_PopWork(a2, v7);
+
+            v5 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v5->poke_cnt = 1;
+            v5->pokeID[0] = (int)a3;
+            v5->rankType = STATSTAGE_ATTACK;
+            v5->rankVolume = 1;
+            BattleHandler_PopWork(a2, v5);
+            v6 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v6->poke_cnt = 1;
+            v6->pokeID[0] = (int)a3;
+            v6->rankType = STATSTAGE_SPECIAL_ATTACK;
+            v6->rankVolume = 1;
+            BattleHandler_PopWork(a2, v6);
+        }
+    }
+
+      void HandlerProtoArmor(BattleEventItem *a1, ServerFlow *a2, int a3)
+    {
+        BattleMon *PokeParam;
+
+        if (a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            PokeParam = Handler_GetBattleMon(a2, a3);
+            if (BattleMon_IsStatChangeValid(PokeParam, 2u, 1) || BattleMon_IsStatChangeValid(PokeParam, 4u, 1) || BattleMon_IsStatChangeValid(PokeParam, 6u, -1))
+            {
+                ItemEvent_PushRun(a1, a2, a3);
+            }
+        }
+    }
+
+    void HandlerProtoArmorUse(int a1, ServerFlow *a2, unsigned int *a3)
+    {
+        HandlerParam_ChangeStatStage *v5;
+        HandlerParam_ChangeStatStage *v6;
+        HandlerParam_ConsumeItem *v7; // r6
+        HandlerParam_Message *v8;
+        int SubID; // r0
+
+        if ((int)a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            v5 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v5->poke_cnt = 1;
+            v5->pokeID[0] = (int)a3;
+            v5->rankType = STATSTAGE_DEFENSE;
+            v5->rankVolume = 1;
+            BattleHandler_PopWork(a2, v5);
+            v6 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v6->poke_cnt = 1;
+            v6->pokeID[0] = (int)a3;
+            v6->rankType = STATSTAGE_SPECIAL_DEFENSE;
+            v6->rankVolume = 1;
+            BattleHandler_PopWork(a2, v6);
+            v6 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v6->poke_cnt = 1;
+            v6->pokeID[0] = (int)a3;
+            v6->rankType = STATSTAGE_ACCURACY;
+            v6->rankVolume = -1;
+            BattleHandler_PopWork(a2, v6);
+        }
+    }
+
+    void HandlerCLRSArmor(BattleEventItem *a1, ServerFlow *a2, int a3)
+    {
+        BattleMon *PokeParam;
+
+        if (a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            PokeParam = Handler_GetBattleMon(a2, a3);
+            if (BattleMon_IsStatChangeValid(PokeParam, 2u, 1) || BattleMon_IsStatChangeValid(PokeParam, 4u, 1))
+            {
+                ItemEvent_PushRun(a1, a2, a3);
+            }
+        }
+    }
+
+    void HandlerCLRSArmorUse(int a1, ServerFlow *a2, unsigned int *a3)
+    {
+        HandlerParam_ChangeStatStage *v5;
+        HandlerParam_ChangeStatStage *v6;
+        HandlerParam_ConsumeItem *v7; // r6
+        HandlerParam_Message *v8;
+        int SubID; // r0
+
+        if ((int)a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            v8 = (HandlerParam_Message *)BattleHandler_PushWork(a2, EFFECT_MESSAGE, (int)a3);
+            BattleHandler_StrSetup(&v8->str, 2u, 1192);
+            BattleHandler_AddArg(&v8->str, (int)a3);
+            BattleHandler_AddArg(&v8->str, BattleEventItem_GetSubID((BattleEventItem *)a1));
+            BattleHandler_PopWork(a2, v7);
+
+            v5 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v5->poke_cnt = 1;
+            v5->pokeID[0] = (int)a3;
+            v5->rankType = STATSTAGE_DEFENSE;
+            v5->rankVolume = 1;
+            BattleHandler_PopWork(a2, v5);
+            v6 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v6->poke_cnt = 1;
+            v6->pokeID[0] = (int)a3;
+            v6->rankType = STATSTAGE_SPECIAL_DEFENSE;
+            v6->rankVolume = 1;
+            BattleHandler_PopWork(a2, v6);
+        }
+    }
+
+
+
+    void HandlerProtoAccelerator(BattleEventItem *a1, ServerFlow *a2, int a3)
+    {
+        BattleMon *PokeParam;
+
+        if (a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            PokeParam = Handler_GetBattleMon(a2, a3);
+            if (BattleMon_IsStatChangeValid(PokeParam, 5u, 2) || BattleMon_IsStatChangeValid(PokeParam, 6u, -1))
+            {
+                ItemEvent_PushRun(a1, a2, a3);
+            }
+        }
+    }
+
+    void HandlerProtoAcceleratorUse(int a1, ServerFlow *a2, unsigned int *a3)
+    {
+        HandlerParam_ChangeStatStage *v5;
+        HandlerParam_ChangeStatStage *v6;
+        HandlerParam_ConsumeItem *v7; // r6
+        HandlerParam_Message *v8;
+        int SubID; // r0
+
+        if ((int)a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            v8 = (HandlerParam_Message *)BattleHandler_PushWork(a2, EFFECT_MESSAGE, (int)a3);
+            BattleHandler_StrSetup(&v8->str, 2u, 1192);
+            BattleHandler_AddArg(&v8->str, (int)a3);
+            BattleHandler_AddArg(&v8->str, BattleEventItem_GetSubID((BattleEventItem *)a1));
+            BattleHandler_PopWork(a2, v7);
+
+            v5 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v5->poke_cnt = 1;
+            v5->pokeID[0] = (int)a3;
+            v5->rankType = STATSTAGE_SPEED;
+            v5->rankVolume = 2;
+            BattleHandler_PopWork(a2, v5);
+            v6 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v6->poke_cnt = 1;
+            v6->pokeID[0] = (int)a3;
+            v6->rankType = STATSTAGE_ACCURACY;
+            v6->rankVolume = -1;
+            BattleHandler_PopWork(a2, v6);
+        }
+    }
+
+    void HandlerCLRSAccelerator(BattleEventItem *a1, ServerFlow *a2, int a3)
+    {
+        BattleMon *PokeParam;
+
+        if (a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            PokeParam = Handler_GetBattleMon(a2, a3);
+            if (BattleMon_IsStatChangeValid(PokeParam, 5u, 2))
+            {
+                ItemEvent_PushRun(a1, a2, a3);
+            }
+        }
+    }
+
+    void HandlerCLRSAcceleratorUse(int a1, ServerFlow *a2, unsigned int *a3)
+    {
+        HandlerParam_ChangeStatStage *v5;
+        HandlerParam_ChangeStatStage *v6;
+        HandlerParam_ConsumeItem *v7; // r6
+        HandlerParam_Message *v8;
+        int SubID; // r0
+
+        if ((int)a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            v8 = (HandlerParam_Message *)BattleHandler_PushWork(a2, EFFECT_MESSAGE, (int)a3);
+            BattleHandler_StrSetup(&v8->str, 2u, 1192);
+            BattleHandler_AddArg(&v8->str, (int)a3);
+            BattleHandler_AddArg(&v8->str, BattleEventItem_GetSubID((BattleEventItem *)a1));
+            BattleHandler_PopWork(a2, v7);
+
+            v5 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v5->poke_cnt = 1;
+            v5->pokeID[0] = (int)a3;
+            v5->rankType = STATSTAGE_SPEED;
+            v5->rankVolume = 2;
+            BattleHandler_PopWork(a2, v5);
+        }
+    }
+
+    void HandlerCLRSInvention(BattleEventItem *a1, ServerFlow *a2, int a3)
+    {
+        BattleMon *PokeParam;
+
+        if (a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            PokeParam = Handler_GetBattleMon(a2, a3);
+            if (BattleMon_IsStatChangeValid(PokeParam, 5u, 2))
+            {
+                ItemEvent_PushRun(a1, a2, a3);
+            }
+        }
+    }
+
+    void HandlerCLRSInventionUse(int a1, ServerFlow *a2, unsigned int *a3)
+    {
+        HandlerParam_ChangeStatStage *v5;
+        HandlerParam_ChangeStatStage *v6;
+        HandlerParam_ChangeStatStage *v7;
+        HandlerParam_ChangeStatStage *v8;
+        HandlerParam_ChangeStatStage *v9;
+
+        HandlerParam_ConsumeItem *v10; // r6
+        HandlerParam_Message *v11;
+        int SubID; // r0
+
+        if ((int)a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            v11 = (HandlerParam_Message *)BattleHandler_PushWork(a2, EFFECT_MESSAGE, (int)a3);
+            BattleHandler_StrSetup(&v11->str, 2u, 1192);
+            BattleHandler_AddArg(&v11->str, (int)a3);
+            BattleHandler_AddArg(&v11->str, BattleEventItem_GetSubID((BattleEventItem *)a1));
+            BattleHandler_PopWork(a2, v10);
+
+            v5 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v5->poke_cnt = 1;
+            v5->pokeID[0] = (int)a3;
+            v5->rankType = STATSTAGE_ATTACK;
+            v5->rankVolume = 1;
+            BattleHandler_PopWork(a2, v5);
+            v6 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v6->poke_cnt = 1;
+            v6->pokeID[0] = (int)a3;
+            v6->rankType = STATSTAGE_DEFENSE;
+            v6->rankVolume = 1;
+            v6->fMoveAnimation = 1;
+            BattleHandler_PopWork(a2, v6);
+            v7 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v7->poke_cnt = 1;
+            v7->pokeID[0] = (int)a3;
+            v7->rankType = STATSTAGE_SPECIAL_ATTACK;
+            v7->rankVolume = 1;
+            v7->fMoveAnimation = 1;
+            BattleHandler_PopWork(a2, v7);
+            v8 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v8->poke_cnt = 1;
+            v8->pokeID[0] = (int)a3;
+            v8->rankType = STATSTAGE_SPECIAL_DEFENSE;
+            v8->rankVolume = 1;
+            v8->fMoveAnimation = 1;
+            BattleHandler_PopWork(a2, v8);
+            v9 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
+            v9->poke_cnt = 1;
+            v9->pokeID[0] = (int)a3;
+            v9->rankType = STATSTAGE_SPEED;
+            v9->rankVolume = 1;
+            v9->fMoveAnimation = 1;
+            BattleHandler_PopWork(a2, v9);
+        }
+    }
+
+    //
+    // MYSTERIOUS DEVICE / PROTO BOOSTER
+    //
+    ITEM_TRIGGERTABLE ProtoBoosterHandlers[] = {
+        {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerProtoBooster},   // 24
+        {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerProtoBoosterUse}, // 25
+    };
+
+    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddQuickPowder(_DWORD *a1)
+    {
+        *a1 = 2;
+        return ProtoBoosterHandlers;
+    }
+
+    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddPowerWeight(_DWORD *a1)
+    {
+        *a1 = 2;
+        return ProtoBoosterHandlers;
+    }
+
+    //
+    // COLRESS BOOSTER
+    //
+    ITEM_TRIGGERTABLE CLRSBoosterHandlers[] = {
+        {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerCLRSBooster},   // 24
+        {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerCLRSBoosterUse}, // 25
+    };
+
+    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddPowerBand(_DWORD *a1)
+    {
+        *a1 = 2;
+        return CLRSBoosterHandlers;
+    }
+
+    //
+    // Speed Booster
+    //
+    ITEM_TRIGGERTABLE ProtoAcceleratorHandlers[] = {
+        {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerProtoAccelerator},   // 24
+        {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerProtoAcceleratorUse}, // 25
+    };
+
+    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddRockIncense(_DWORD *a1)
+    {
+        *a1 = 2;
+        return ProtoAcceleratorHandlers;
+    }
+
+    ITEM_TRIGGERTABLE CLRSAccleratorHandlers[] = {
+        {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerCLRSAccelerator},   // 24
+        {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerCLRSAcceleratorUse}, // 25
+    };
+
+    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddRoseIncense(_DWORD *a1)
+    {
+        *a1 = 2;
+        return CLRSAccleratorHandlers;
+    }
+
+    ITEM_TRIGGERTABLE CLRSInventionHandlers[] = {
+        {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerCLRSInvention},   // 24
+        {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerCLRSInventionUse}, // 25
+    };
+
+    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddOddIncense(_DWORD *a1)
+    {
+        *a1 = 2;
+        return CLRSInventionHandlers;
+    }
+
+    //
+    // Attack Insurance
+    //
+    ITEM_TRIGGERTABLE AttackInsuranceHandlers[] = {
+        {EVENT_MOVE_EXECUTE_NOEFFECT, (ITEM_HANDLER_FUNC)HandlerAttackInsuranceUse}, // 24
+    };
+
+    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddLaxIncense(_DWORD *a1)
+    {
+        *a1 = 1;
+        return AttackInsuranceHandlers;
+    }
+
+
+    ITEM_TRIGGERTABLE ProtoArmorHandlers[] = {
+       {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerProtoArmor},   // 24
+        {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerProtoArmorUse}, // 25
+    };
+
+    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddSeaIncense(_DWORD *a1)
+    {
+        *a1 = 2;
+        return ProtoArmorHandlers;
+    }
+
+
+    ITEM_TRIGGERTABLE CLRSArmorHandlers[] = {
+       {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerCLRSArmor},   // 24
+        {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerCLRSArmorUse}, // 25
+    };
+
+    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddGripClaw(_DWORD *a1)
+    {
+        *a1 = 2;
+        return CLRSArmorHandlers;
+    }
+
+
+    //
+    //
+    //  NEW STICK FUNCTIONALITY
+    //
+    //
+    //
+    void NewStickHandler(int a1, ServerFlow *a2, int a3)
+    {
+        BattleMon *BattleMon;   // r0
+        unsigned __int16 Value; // r0
+
+        if (a3 == BattleEventVar_GetValue(VAR_ATTACKING_MON))
+        {
+            BattleMon = Handler_GetBattleMon(a2, a3);
+            if (BattleMon_GetSpecies(BattleMon) == PK083_FARFETCH_D)
+            {
+                Value = BattleEventVar_GetValue(VAR_MOVE_ID);
+                if (PML_MoveGetCategory(Value) == 1)
+                {
+                    BattleEventVar_MulValue(VAR_RATIO, 0x2000);
+                }
+            }
+        }
+    }
+    ITEM_TRIGGERTABLE StickHandlers[] = {
+        {EVENT_ATTACKER_POWER, (ITEM_HANDLER_FUNC)NewStickHandler}, // 24
+    };
+
+    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddStick(_DWORD *a1)
+    {
+        *a1 = 1;
+        return StickHandlers;
+    }
+
+    //
+    //  WEATHER ITEM CHANGES
+    //
+    void HandlerSmoothRock(BattleEventItem *a1, ServerFlow *a2, int a3)
+    {
+        if (a3 == BattleEventVar_GetValue(VAR_MON_ID) && ServerEvent_GetWeather(a2) != WEATHER_SAND)
+        {
+            ItemEvent_PushRun(a1, a2, a3);
+        }
+    }
+
+    void HandlerSmoothRockUse(int a1, ServerFlow *a2, int a3)
+    {
+        HandlerParam_ChangeWeather *v6; // r0
+
+        if (a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            v6 = (HandlerParam_ChangeWeather *)BattleHandler_PushWork(a2, EFFECT_CHANGE_WEATHER, a3);
+            v6->weather = WEATHER_SAND;
+            v6->turnCount = -1;
+            BattleHandler_PopWork(a2, v6);
+        }
+    }
+
+    void HandlerIcyRock(BattleEventItem *a1, ServerFlow *a2, int a3)
+    {
+        if (a3 == BattleEventVar_GetValue(VAR_MON_ID) && ServerEvent_GetWeather(a2) != WEATHER_HAIL)
+        {
+            ItemEvent_PushRun(a1, a2, a3);
+        }
+    }
+
+    void HandlerIcyRockUse(int a1, ServerFlow *a2, int a3)
+    {
+        HandlerParam_ChangeWeather *v6; // r0
+
+        if (a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            v6 = (HandlerParam_ChangeWeather *)BattleHandler_PushWork(a2, EFFECT_CHANGE_WEATHER, a3);
+            v6->weather = WEATHER_HAIL;
+            v6->turnCount = -1;
+            BattleHandler_PopWork(a2, v6);
+        }
+    }
+
+    void HandlerDampRock(BattleEventItem *a1, ServerFlow *a2, int a3)
+    {
+        if (a3 == BattleEventVar_GetValue(VAR_MON_ID) && ServerEvent_GetWeather(a2) != WEATHER_RAIN)
+        {
+            ItemEvent_PushRun(a1, a2, a3);
+        }
+    }
+
+    void HandlerDampRockUse(int a1, ServerFlow *a2, int a3)
+    {
+        HandlerParam_ChangeWeather *v6; // r0
+
+        if (a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            v6 = (HandlerParam_ChangeWeather *)BattleHandler_PushWork(a2, EFFECT_CHANGE_WEATHER, a3);
+            v6->weather = WEATHER_RAIN;
+            v6->turnCount = -1;
+            BattleHandler_PopWork(a2, v6);
+        }
+    }
+
+    void HandlerHeatRock(BattleEventItem *a1, ServerFlow *a2, int a3)
+    {
+        if (a3 == BattleEventVar_GetValue(VAR_MON_ID) && ServerEvent_GetWeather(a2) != WEATHER_SUN)
+        {
+            ItemEvent_PushRun(a1, a2, a3);
+        }
+    }
+
+    void HandlerHeatRockUse(int a1, ServerFlow *a2, int a3)
+    {
+        HandlerParam_ChangeWeather *v6; // r0
+
+        if (a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            v6 = (HandlerParam_ChangeWeather *)BattleHandler_PushWork(a2, EFFECT_CHANGE_WEATHER, a3);
+            v6->weather = WEATHER_SUN;
+            v6->turnCount = -1;
+            BattleHandler_PopWork(a2, v6);
+        }
+    }
+
+    ITEM_TRIGGERTABLE SmoothRockHandlers[] = {
+        {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerSmoothRock},             // 24
+        {EVENT_AFTER_ITEM_EQUIP, (ITEM_HANDLER_FUNC)HandlerSmoothRock},      // 24
+        {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerSmoothRockUse},           // 24
+        {EVENT_WEATHER_REACTION, (ITEM_HANDLER_FUNC)HandlerSandVeilWeather}, // 24
+    };
+
+    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddSmoothRock(_DWORD *a1)
+    {
+        *a1 = 5;
+        return SmoothRockHandlers;
+    }
+
+    ITEM_TRIGGERTABLE IcyRockHandlers[] = {
+        {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerIcyRock},                 // 24
+        {EVENT_AFTER_ITEM_EQUIP, (ITEM_HANDLER_FUNC)HandlerIcyRock},          // 24
+        {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerIcyRockUse},               // 24
+        {EVENT_WEATHER_REACTION, (ITEM_HANDLER_FUNC)HandlerSnowCloakWeather}, // 24
+    };
+
+    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddIcyRock(_DWORD *a1)
+    {
+        *a1 = 4;
+        return IcyRockHandlers;
+    }
+
+    ITEM_TRIGGERTABLE HeatRockHandlers[] = {
+        {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerHeatRock},        // 24
+        {EVENT_AFTER_ITEM_EQUIP, (ITEM_HANDLER_FUNC)HandlerHeatRock}, // 24
+        {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerHeatRockUse},      // 24
+    };
+
+    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddHeatRock(_DWORD *a1)
+    {
+        *a1 = 3;
+        return HeatRockHandlers;
+    }
+
+    ITEM_TRIGGERTABLE DampRockHandlers[] = {
+        {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerDampRock},        // 24
+        {EVENT_AFTER_ITEM_EQUIP, (ITEM_HANDLER_FUNC)HandlerDampRock}, // 24
+        {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerDampRockUse},      // 24
+    };
+
+    ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddDampRock(_DWORD *a1)
+    {
+        *a1 = 3;
+        return DampRockHandlers;
+    }
+
+    void HandlerLoadedDice(BattleEventItem *battleEventItem, ServerFlow *serverFlow, int pokemonSlot, int *work)
+    {
+        if (pokemonSlot = BattleEventVar_GetValue(VAR_ATTACKING_MON))
+        {
+            BattleMon *attackingMon = Handler_GetBattleMon(serverFlow, pokemonSlot);
+            if (attackingMon->HeldItem == IT0317_LOADED_DICE)
+            {
+                int hitCount = BattleEventVar_GetValue(VAR_MAX_HIT_COUNT);
+                if (hitCount == 5)
+                {
+                    if (BattleRandom(100u) < 50)
+                        hitCount = 4;
+                    else
+                        hitCount = 5;
+                }
+
+                BattleEventVar_RewriteValue(VAR_HIT_COUNT, hitCount);
+                BattleEventVar_RewriteValue(VAR_AVOID_FLAG, 0);
+            }
+        }
+    }
+
+    ITEM_TRIGGERTABLE LoadedDiceHandlers[] = {
+        {EVENT_MOVE_HIT_COUNT, (ITEM_HANDLER_FUNC)HandlerLoadedDice},
+
+    };
+
+    // LoadedDice
+    ITEM_TRIGGERTABLE *EventAddWaveIncense(int *a1)
+    {
+        *a1 = 1;
+        return LoadedDiceHandlers;
     }
 }

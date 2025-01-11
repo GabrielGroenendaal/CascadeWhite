@@ -59,11 +59,32 @@ extern void PokeParty_RecalcStats(PartyPkm *pPoke);
 extern void PML_PersonalFree(PersonalData *personal);
 extern u32 GFL_RandomLCAlt(u32 max);
 extern u16 * GetGameDataPlayerInfo(GameData *gameData);
-
-
-
-
-
+   extern EventWorkSave *GameData_GetEventWork(void *gameData);
+    extern u16 * EventWork_GetWkPtr(EventWorkSave *eventWork, int swkId);
+extern u32  PML_PersonalGetParam(PersonalData *personal, PersonalField field);
+extern PersonalData *  PML_PersonalLoadBW2(u16 species, u16 form);
+extern void * copyTrainerNameToNewStrbuf(wchar_t *pText, HeapID heapId);
+extern StrBuf * GFL_MsgDataLoadStrbufNew(MsgData *msgData, int msgId);
+extern void  GFL_StrBufFree(StrBuf *pStrbuf);
+extern int g_PMLSpeciesNamesResident;
+extern void PokeParty_SetupMetData(
+        PartyPkm *pkm,
+        PokemonObtainType obtain_type,
+        void *pTrainerInfo,
+        u16 location,
+        HeapID heapId);
+extern void PokeParty_PPRecover(PartyPkm *pkm);
+extern void PokeParty_Recover(PartyPkm *pkm);
+extern u16 * ScriptReadVar(void *vm, void *cmd);
+extern GameData* FieldScriptEnv_GetGameData(void *cmd);
+extern HeapID FieldScriptEnv_GetHeapID(void *env);
+extern PokeParty * GameData_GetParty(GameData *pBaseBlk);
+extern u16 ScriptReadAny(void *vm, void *cmd);
+extern int PokeParty_GetCapacity(PokeParty *pPartyBlk);
+extern void* FieldScriptEnv_GetGameSystem(void *cmd);
+extern PartyPkm * PokeParty_NewTempPkm(MonsNo species, u32 level, u32 sidtid, AbilLock abil_num, HeapID heapId);
+extern void GFL_HeapFree(void *heap);
+extern bool PokeParty_AddPkm(PokeParty *party, PartyPkm *pPkm);
 
 
 C_DECL_END

@@ -561,7 +561,7 @@ extern "C"
         unsigned __int16 v10;     // r6
         MailData *v11;            // r6
 
-        k::Printf("\n\nNew Items go here!\n\n");
+       // k::Printf("\n\nNew Items go here!\n\n");
         v2 = a1->field_28C;
         if (v2->field_73 == 1)
         {
@@ -1129,14 +1129,14 @@ extern "C"
 
         v30 = a2;
         v6 = 0;
-        k::Printf("\n111. We have entered the function!\n\nOur Parameters are:\n a1: %d\n\n a2: %d\n\n a3: %d\n\n a4: %d \n\n a5: %d\n\nu16 a5 is %d\n\n", a1, a2, a3, a4, a5, (HeapID)a5);
+      //  k::Printf("\n111. We have entered the function!\n\nOur Parameters are:\n a1: %d\n\n a2: %d\n\n a3: %d\n\n a4: %d \n\n a5: %d\n\nu16 a5 is %d\n\n", a1, a2, a3, a4, a5, (HeapID)a5);
 
         DataFile = (ItemData *)PML_ItemReadDataFile(a2, 0, (HeapID)a5);
-        k::Printf("\n2. We have acquired Datafile\n");
+      //  k::Printf("\n2. We have acquired Datafile\n");
         // Checks to see if there are any actual Battle relevant effects for the item
         if (PML_ItemGetParam(DataFile, ITSTAT_HAS_BATTLE_STATS) != 1)
         {
-            k::Print("\n3. This means this isn't a battle item!\n");
+       //     k::Print("\n3. This means this isn't a battle item!\n");
             goto LABEL_85; // Frees up the heap and exits function
         }
 
@@ -1147,7 +1147,7 @@ extern "C"
         // Gets a value between 0-17 to see if there is a status condition
         Param = PokeParty_GetParam(a1, PF_StatusCond, 0);
         data = Param;
-        k::Printf("\n4. Check for Status Condition: %d\n", data);
+   //     k::Printf("\n4. Check for Status Condition: %d\n", data);
         if (PML_ItemGetParam(DataFile, ITSTAT_AILMENT_SLP))
         {
             data = 0;
@@ -1250,7 +1250,7 @@ extern "C"
         // k::printf("\n14. We're checking if this is an evolution stone!\n");
         if (PML_ItemGetParam(DataFile, ITSTAT_BOOST_EVOSTONE))
         {
-            k::Printf("\n\nThe sort index for this item is %d\n\n", 5);
+           // k::Printf("\n\nThe sort index for this item is %d\n\n", 5);
             // if (PokeParty_GetParam(a1, PF_Species, 0) == 585) {
 
             // }

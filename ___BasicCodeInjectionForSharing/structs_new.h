@@ -28,6 +28,18 @@ STRUCT_DECLARE(BtlvCore)
 
 const int dword_2199900 = 0x2199900;
 
+enum BtlSetupFlag
+{
+    BTL_SETUP_FLAG_FISHING = 0x1,
+    BTL_SETUP_FLAG_ROAMING = 0x8,
+    BTL_SETUP_FLAG_DOUBLE = 0x20,
+    BTL_SETUP_FLAG_ALL_BOXES_FULL = 0x40,
+    BTL_SETUP_FLAG_NO_AUTO_DEFEAT = 0x100,
+    BTL_SETUP_FLAG_NPOKE = 0x2000,
+    BTL_SETUP_FLAG_PHENOMENON = 0x4000,
+    BTL_SETUP_FLAG_NO_CATCH_KYUREM = 0x10000,
+};
+
 enum TurnFlag
 #ifdef __cplusplus
     : u32
@@ -39,8 +51,10 @@ enum TurnFlag
     TURNFLAG_DAMAGED = 0x2,
     TURNFLAG_MOVEPROCDONE = 0x3,
     TURNFLAG_FLINCH = 0x4,
-    TURNFLAG_FOCUSPUNCHREADY = 0x5,
-    TURNFLAG_FOCUSPUNCHFAIL = 0x6,
+    // TURNFLAG_FOCUSPUNCHREADY = 0x5,
+    TURNFLAG_MOVEFAILED = 0x5,
+    // TURNFLAG_FOCUSPUNCHFAIL = 0x6,
+    TURNFLAG_MOVEFAILEDLASTTURN = 0x6,
     TURNFLAG_PROTECT = 0x7,
     TURNFLAG_ITEMCONSUMED = 0x8,
     TURNFLAG_CANTUSEITEM = 0x9,
@@ -65,9 +79,9 @@ enum MoveID
     MOVE008_ICE_PUNCH = 0x8,
     MOVE009_THUNDER_PUNCH = 0x9,
     MOVE010_SCRATCH = 0xA,
-    MOVE011_VICE_GRIP = 0xB,
+    MOVE011_DUAL_WINGBEAT = 0xB,
     MOVE012_GUILLOTINE = 0xC,
-    MOVE013_RAZOR_WIND = 0xD,
+    MOVE013_FIRE_LASH = 0xD,
     MOVE014_SWORDS_DANCE = 0xE,
     MOVE015_CUT = 0xF,
     MOVE016_GUST = 0x10,
@@ -75,17 +89,17 @@ enum MoveID
     MOVE018_WHIRLWIND = 0x12,
     MOVE019_FLY = 0x13,
     MOVE020_BIND = 0x14,
-    MOVE021_SLAM = 0x15,
-    MOVE022_VINE_WHIP = 0x16,
+    MOVE021_BRUTAL_SWING = 0x15,
+    MOVE022_VINE_WHIPS = 0x16,
     MOVE023_STOMP = 0x17,
     MOVE024_DOUBLE_KICK = 0x18,
-    MOVE025_MEGA_KICK = 0x19,
+    MOVE025_HIGH_HORSEPOWER = 0x19,
     MOVE026_JUMP_KICK = 0x1A,
-    MOVE027_ROLLING_KICK = 0x1B,
-    MOVE028_SAND_ATTACK = 0x1C,
+    MOVE027_HEADLONG_RUSH = 0x1B,
+    MOVE028_SCORCHING_SANDS = 0x1C,
     MOVE029_HEADBUTT = 0x1D,
     MOVE030_HORN_ATTACK = 0x1E,
-    MOVE031_FURY_ATTACK = 0x1F,
+    MOVE031_RAZOR_WINDS = 0x1F,
     MOVE032_HORN_DRILL = 0x20,
     MOVE033_TACKLE = 0x21,
     MOVE034_BODY_SLAM = 0x22,
@@ -100,7 +114,7 @@ enum MoveID
     MOVE043_LEER = 0x2B,
     MOVE044_BITE = 0x2C,
     MOVE045_GROWL = 0x2D,
-    MOVE046_ROAR = 0x2E,
+    MOVE046_STOMPING_TANTRUM = 0x2E,
     MOVE047_SING = 0x2F,
     MOVE048_SUPERSONIC = 0x30,
     MOVE049_SONIC_BOOM = 0x31,
@@ -120,7 +134,7 @@ enum MoveID
     MOVE063_HYPER_BEAM = 0x3F,
     MOVE064_PECK = 0x40,
     MOVE065_DRILL_PECK = 0x41,
-    MOVE066_SUBMISSION = 0x42,
+    MOVE066_PLAY_ROUGH = 0x42,
     MOVE067_LOW_KICK = 0x43,
     MOVE068_COUNTER = 0x44,
     MOVE069_SEISMIC_TOSS = 0x45,
@@ -164,14 +178,14 @@ enum MoveID
     MOVE107_MINIMIZE = 0x6B,
     MOVE108_SMOKESCREEN = 0x6C,
     MOVE109_CONFUSE_RAY = 0x6D,
-    MOVE110_WITHDRAW = 0x6E,
+    MOVE110_BREAKING_SWIPE = 0x6E,
     MOVE111_DEFENSE_CURL = 0x6F,
     MOVE112_BARRIER = 0x70,
     MOVE113_LIGHT_SCREEN = 0x71,
     MOVE114_HAZE = 0x72,
     MOVE115_REFLECT = 0x73,
     MOVE116_FOCUS_ENERGY = 0x74,
-    MOVE117_BIDE = 0x75,
+    MOVE117_HIDDEN_FORCE = 0x75,
     MOVE118_METRONOME = 0x76,
     MOVE119_MIRROR_MOVE = 0x77,
     MOVE120_SELF_DESTRUCT = 0x78,
@@ -186,9 +200,9 @@ enum MoveID
     MOVE129_SWIFT = 0x81,
     MOVE130_SKULL_BASH = 0x82,
     MOVE131_SPIKE_CANNON = 0x83,
-    MOVE132_CONSTRICT = 0x84,
+    MOVE132_INFESTATION = 0x84,
     MOVE133_AMNESIA = 0x85,
-    MOVE134_KINESIS = 0x86,
+    MOVE134_LUNGE = 0x86,
     MOVE135_SOFT_BOILED = 0x87,
     MOVE136_HIGH_JUMP_KICK = 0x88,
     MOVE137_GLARE = 0x89,
@@ -198,13 +212,13 @@ enum MoveID
     MOVE141_LEECH_LIFE = 0x8D,
     MOVE142_LOVELY_KISS = 0x8E,
     MOVE143_SKY_ATTACK = 0x8F,
-    MOVE144_TRANSFORM = 0x90,
-    MOVE145_BUBBLE = 0x91,
+    MOVE144_PHANTOM_STRIKE = 0x90,
+    MOVE145_CHILLING_WATER = 0x91,
     MOVE146_DIZZY_PUNCH = 0x92,
     MOVE147_SPORE = 0x93,
-    MOVE148_FLASH = 0x94,
+    MOVE148_SPARKLE = 0x94,
     MOVE149_PSYWAVE = 0x95,
-    MOVE150_SPLASH = 0x96,
+    MOVE150_SPIRIT_BREAK = 0x96,
     MOVE151_ACID_ARMOR = 0x97,
     MOVE152_CRABHAMMER = 0x98,
     MOVE153_EXPLOSION = 0x99,
@@ -213,8 +227,8 @@ enum MoveID
     MOVE156_REST = 0x9C,
     MOVE157_ROCK_SLIDE = 0x9D,
     MOVE158_HYPER_FANG = 0x9E,
-    MOVE159_SHARPEN = 0x9F,
-    MOVE160_CONVERSION = 0xA0,
+    MOVE159_NUZZLE = 0x9F,
+    MOVE160_FLIP_TURN = 0xA0,
     MOVE161_TRI_ATTACK = 0xA1,
     MOVE162_SUPER_FANG = 0xA2,
     MOVE163_SLASH = 0xA3,
@@ -223,60 +237,60 @@ enum MoveID
     MOVE166_SKETCH = 0xA6,
     MOVE167_TRIPLE_KICK = 0xA7,
     MOVE168_THIEF = 0xA8,
-    MOVE169_SPIDER_WEB = 0xA9,
-    MOVE170_MIND_READER = 0xAA,
+    MOVE169_INFERNAL_PARADE = 0xA9,
+    MOVE170_SNAP_TRAP = 0xAA,
     MOVE171_NIGHTMARE = 0xAB,
     MOVE172_FLAME_WHEEL = 0xAC,
     MOVE173_SNORE = 0xAD,
     MOVE174_CURSE = 0xAE,
     MOVE175_FLAIL = 0xAF,
-    MOVE176_CONVERSION_2 = 0xB0,
+    MOVE176_SPIN_OUT = 0xB0,
     MOVE177_AEROBLAST = 0xB1,
     MOVE178_COTTON_SPORE = 0xB2,
     MOVE179_REVERSAL = 0xB3,
-    MOVE180_SPITE = 0xB4,
+    MOVE180_DIAMOND_STORM = 0xB4,
     MOVE181_POWDER_SNOW = 0xB5,
     MOVE182_PROTECT = 0xB6,
     MOVE183_MACH_PUNCH = 0xB7,
     MOVE184_SCARY_FACE = 0xB8,
     MOVE185_FEINT_ATTACK = 0xB9,
-    MOVE186_SWEET_KISS = 0xBA,
+    MOVE186_DRAINING_KISS = 0xBA,
     MOVE187_BELLY_DRUM = 0xBB,
     MOVE188_SLUDGE_BOMB = 0xBC,
     MOVE189_MUD_SLAP = 0xBD,
     MOVE190_OCTAZOOKA = 0xBE,
     MOVE191_SPIKES = 0xBF,
     MOVE192_ZAP_CANNON = 0xC0,
-    MOVE193_FORESIGHT = 0xC1,
+    MOVE193_ELECTRO_SHOT = 0xC1,
     MOVE194_DESTINY_BOND = 0xC2,
     MOVE195_PERISH_SONG = 0xC3,
     MOVE196_ICY_WIND = 0xC4,
     MOVE197_DETECT = 0xC5,
     MOVE198_BONE_RUSH = 0xC6,
-    MOVE199_LOCK_ON = 0xC7,
+    MOVE199_PARTING_SHOT = 0xC7,
     MOVE200_OUTRAGE = 0xC8,
     MOVE201_SANDSTORM = 0xC9,
     MOVE202_GIGA_DRAIN = 0xCA,
     MOVE203_ENDURE = 0xCB,
     MOVE204_CHARM = 0xCC,
-    MOVE205_ROLLOUT = 0xCD,
-    MOVE206_FALSE_SWIPE = 0xCE,
+    MOVE205_ACCELROCK = 0xCD,
+    MOVE206_BODY_PRESS = 0xCE,
     MOVE207_SWAGGER = 0xCF,
     MOVE208_MILK_DRINK = 0xD0,
     MOVE209_SPARK = 0xD1,
     MOVE210_FURY_CUTTER = 0xD2,
     MOVE211_STEEL_WING = 0xD3,
-    MOVE212_MEAN_LOOK = 0xD4,
+    MOVE212_BARB_BARRAGE = 0xD4,
     MOVE213_ATTRACT = 0xD5,
     MOVE214_SLEEP_TALK = 0xD6,
     MOVE215_HEAL_BELL = 0xD7,
     MOVE216_RETURN = 0xD8,
     MOVE217_PRESENT = 0xD9,
-    MOVE218_FRUSTRATION = 0xDA,
+    MOVE218_TEMPER_FLARE = 0xDA,
     MOVE219_SAFEGUARD = 0xDB,
-    MOVE220_PAIN_SPLIT = 0xDC,
-    MOVE221_SACRED_FIRE = 0xDD,
-    MOVE222_MAGNITUDE = 0xDE,
+    MOVE220_SEETHING_COLD = 0xDC,
+    MOVE221_MYSTICAL_FIRE = 0xDD,
+    MOVE222_STICKY_WEB = 0xDE,
     MOVE223_DYNAMIC_PUNCH = 0xDF,
     MOVE224_MEGAHORN = 0xE0,
     MOVE225_DRAGON_BREATH = 0xE1,
@@ -298,7 +312,7 @@ enum MoveID
     MOVE241_SUNNY_DAY = 0xF1,
     MOVE242_CRUNCH = 0xF2,
     MOVE243_MIRROR_COAT = 0xF3,
-    MOVE244_PSYCH_UP = 0xF4,
+    MOVE244_BITTER_MALICE = 0xF4,
     MOVE245_EXTREME_SPEED = 0xF5,
     MOVE246_ANCIENT_POWER = 0xF6,
     MOVE247_SHADOW_BALL = 0xF7,
@@ -318,17 +332,17 @@ enum MoveID
     MOVE261_WILL_O_WISP = 0x105,
     MOVE262_MEMENTO = 0x106,
     MOVE263_FACADE = 0x107,
-    MOVE264_FOCUS_PUNCH = 0x108,
-    MOVE265_SMELLING_SALTS = 0x109,
+    MOVE264_ALLURING_VOICE = 0x108,
+    MOVE265_PSYCHIC_FANGS = 0x109,
     MOVE266_FOLLOW_ME = 0x10A,
     MOVE267_NATURE_POWER = 0x10B,
-    MOVE268_CHARGE = 0x10C,
+    MOVE268_PARABOLIC_CHARGE = 0x10C,
     MOVE269_TAUNT = 0x10D,
     MOVE270_HELPING_HAND = 0x10E,
     MOVE271_TRICK = 0x10F,
     MOVE272_ROLE_PLAY = 0x110,
     MOVE273_WISH = 0x111,
-    MOVE274_ASSIST = 0x112,
+    MOVE274_PSYCHIC_NOISE = 0x112,
     MOVE275_INGRAIN = 0x113,
     MOVE276_SUPERPOWER = 0x114,
     MOVE277_MAGIC_COAT = 0x115,
@@ -343,18 +357,18 @@ enum MoveID
     MOVE286_IMPRISON = 0x11E,
     MOVE287_REFRESH = 0x11F,
     MOVE288_GRUDGE = 0x120,
-    MOVE289_SNATCH = 0x121,
+    MOVE289_VICTORY_DANCE = 0x121,
     MOVE290_SECRET_POWER = 0x122,
     MOVE291_DIVE = 0x123,
     MOVE292_ARM_THRUST = 0x124,
-    MOVE293_CAMOUFLAGE = 0x125,
+    MOVE293_TROP_KICK = 0x125,
     MOVE294_TAIL_GLOW = 0x126,
-    MOVE295_LUSTER_PURGE = 0x127,
-    MOVE296_MIST_BALL = 0x128,
+    MOVE295_DAZZLING_GLEAM = 0x127,
+    MOVE296_MOONBLAST = 0x128,
     MOVE297_FEATHER_DANCE = 0x129,
     MOVE298_TEETER_DANCE = 0x12A,
     MOVE299_BLAZE_KICK = 0x12B,
-    MOVE300_MUD_SPORT = 0x12C,
+    MOVE300_ESPER_WING = 0x12C,
     MOVE301_ICE_BALL = 0x12D,
     MOVE302_NEEDLE_ARM = 0x12E,
     MOVE303_SLACK_OFF = 0x12F,
@@ -370,7 +384,7 @@ enum MoveID
     MOVE313_FAKE_TEARS = 0x139,
     MOVE314_AIR_CUTTER = 0x13A,
     MOVE315_OVERHEAT = 0x13B,
-    MOVE316_ODOR_SLEUTH = 0x13C,
+    MOVE316_EERIE_IMPULSE = 0x13C,
     MOVE317_ROCK_TOMB = 0x13D,
     MOVE318_SILVER_WIND = 0x13E,
     MOVE319_METAL_SOUND = 0x13F,
@@ -389,7 +403,7 @@ enum MoveID
     MOVE332_AERIAL_ACE = 0x14C,
     MOVE333_ICICLE_SPEAR = 0x14D,
     MOVE334_IRON_DEFENSE = 0x14E,
-    MOVE335_BLOCK = 0x14F,
+    MOVE335_ICE_HAMMER = 0x14F,
     MOVE336_HOWL = 0x150,
     MOVE337_DRAGON_CLAW = 0x151,
     MOVE338_FRENZY_PLANT = 0x152,
@@ -400,7 +414,7 @@ enum MoveID
     MOVE343_COVET = 0x157,
     MOVE344_VOLT_TACKLE = 0x158,
     MOVE345_MAGICAL_LEAF = 0x159,
-    MOVE346_WATER_SPORT = 0x15A,
+    MOVE346_WICKED_BLOW = 0x15A,
     MOVE347_CALM_MIND = 0x15B,
     MOVE348_LEAF_BLADE = 0x15C,
     MOVE349_DRAGON_DANCE = 0x15D,
@@ -411,14 +425,14 @@ enum MoveID
     MOVE354_PSYCHO_BOOST = 0x162,
     MOVE355_ROOST = 0x163,
     MOVE356_GRAVITY = 0x164,
-    MOVE357_MIRACLE_EYE = 0x165,
+    MOVE357_FREEZE_DRY = 0x165,
     MOVE358_WAKE_UP_SLAP = 0x166,
     MOVE359_HAMMER_ARM = 0x167,
     MOVE360_GYRO_BALL = 0x168,
     MOVE361_HEALING_WISH = 0x169,
     MOVE362_BRINE = 0x16A,
     MOVE363_NATURAL_GIFT = 0x16B,
-    MOVE364_FEINT = 0x16C,
+    MOVE364_CONFIDE = 0x16C,
     MOVE365_PLUCK = 0x16D,
     MOVE366_TAILWIND = 0x16E,
     MOVE367_ACUPRESSURE = 0x16F,
@@ -427,26 +441,26 @@ enum MoveID
     MOVE370_CLOSE_COMBAT = 0x172,
     MOVE371_PAYBACK = 0x173,
     MOVE372_ASSURANCE = 0x174,
-    MOVE373_EMBARGO = 0x175,
+    MOVE373_1ST_IMPRESSION = 0x175,
     MOVE374_FLING = 0x176,
     MOVE375_PSYCHO_SHIFT = 0x177,
-    MOVE376_TRUMP_CARD = 0x178,
+    MOVE376_SPIKY_SHIELD = 0x178,
     MOVE377_HEAL_BLOCK = 0x179,
-    MOVE378_WRING_OUT = 0x17A,
-    MOVE379_POWER_TRICK = 0x17B,
+    MOVE378_SCALE_SHOT = 0x17A,
+    MOVE379_PETAL_BLIZZARD = 0x17B,
     MOVE380_GASTRO_ACID = 0x17C,
     MOVE381_LUCKY_CHANT = 0x17D,
     MOVE382_ME_FIRST = 0x17E,
     MOVE383_COPYCAT = 0x17F,
-    MOVE384_POWER_SWAP = 0x180,
-    MOVE385_GUARD_SWAP = 0x181,
-    MOVE386_PUNISHMENT = 0x182,
+    MOVE384_PSYBLADE = 0x180,
+    MOVE385_CLANGING_SCALES = 0x181,
+    MOVE386_WAVE_CRASH = 0x182,
     MOVE387_LAST_RESORT = 0x183,
     MOVE388_WORRY_SEED = 0x184,
     MOVE389_SUCKER_PUNCH = 0x185,
     MOVE390_TOXIC_SPIKES = 0x186,
-    MOVE391_HEART_SWAP = 0x187,
-    MOVE392_AQUA_RING = 0x188,
+    MOVE391_BOOMBURST = 0x187,
+    MOVE392_FAIRY_WIND = 0x188,
     MOVE393_MAGNET_RISE = 0x189,
     MOVE394_FLARE_BLITZ = 0x18A,
     MOVE395_FORCE_PALM = 0x18B,
@@ -508,15 +522,15 @@ enum MoveID
     MOVE451_CHARGE_BEAM = 0x1C3,
     MOVE452_WOOD_HAMMER = 0x1C4,
     MOVE453_AQUA_JET = 0x1C5,
-    MOVE454_ATTACK_ORDER = 0x1C6,
+    MOVE454_SCORCHING_SWARM = 0x1C6,
     MOVE455_DEFEND_ORDER = 0x1C7,
     MOVE456_HEAL_ORDER = 0x1C8,
     MOVE457_HEAD_SMASH = 0x1C9,
     MOVE458_DOUBLE_HIT = 0x1CA,
-    MOVE459_ROAR_OF_TIME = 0x1CB,
-    MOVE460_SPACIAL_REND = 0x1CC,
-    MOVE461_LUNAR_DANCE = 0x1CD,
-    MOVE462_CRUSH_GRIP = 0x1CE,
+    MOVE459_STARBURST = 0x1CB,
+    MOVE460_STEEL_BEAM = 0x1CC,
+    MOVE461_POLLEN_PUFF = 0x1CD,
+    MOVE462_SILK_TRAP = 0x1CE,
     MOVE463_MAGMA_STORM = 0x1CF,
     MOVE464_DARK_VOID = 0x1D0,
     MOVE465_SEED_FLARE = 0x1D1,
@@ -524,15 +538,15 @@ enum MoveID
     MOVE467_SHADOW_FORCE = 0x1D3,
     MOVE468_HONE_CLAWS = 0x1D4,
     MOVE469_WIDE_GUARD = 0x1D5,
-    MOVE470_GUARD_SPLIT = 0x1D6,
-    MOVE471_POWER_SPLIT = 0x1D7,
-    MOVE472_WONDER_ROOM = 0x1D8,
+    MOVE470_TRIPLE_AXEL = 0x1D6,
+    MOVE471_TRIPLE_DIVE = 0x1D7,
+    MOVE472_LIQUIDATION = 0x1D8,
     MOVE473_PSYSHOCK = 0x1D9,
     MOVE474_VENOSHOCK = 0x1DA,
     MOVE475_AUTOTOMIZE = 0x1DB,
     MOVE476_RAGE_POWDER = 0x1DC,
     MOVE477_TELEKINESIS = 0x1DD,
-    MOVE478_MAGIC_ROOM = 0x1DE,
+    MOVE478_POWER_TRIP = 0x1DE,
     MOVE479_SMACK_DOWN = 0x1DF,
     MOVE480_STORM_THROW = 0x1E0,
     MOVE481_FLAME_BURST = 0x1E1,
@@ -550,7 +564,7 @@ enum MoveID
     MOVE493_SIMPLE_BEAM = 0x1ED,
     MOVE494_ENTRAINMENT = 0x1EE,
     MOVE495_AFTER_YOU = 0x1EF,
-    MOVE496_ROUND = 0x1F0,
+    MOVE496_DISARMING_VOICE = 0x1F0,
     MOVE497_ECHOED_VOICE = 0x1F1,
     MOVE498_CHIP_AWAY = 0x1F2,
     MOVE499_CLEAR_SMOG = 0x1F3,
@@ -607,75 +621,14 @@ enum MoveID
     MOVE550_BOLT_STRIKE = 0x226,
     MOVE551_BLUE_FLARE = 0x227,
     MOVE552_FIERY_DANCE = 0x228,
-    MOVE553_FREEZE_SHOCK = 0x229,
-    MOVE554_ICE_BURN = 0x22A,
+    MOVE553_METEOR_BEAM = 0x229,
+    MOVE554_SOLAR_BLADE = 0x22A,
     MOVE555_SNARL = 0x22B,
     MOVE556_ICICLE_CRASH = 0x22C,
     MOVE557_V_CREATE = 0x22D,
     MOVE558_FUSION_FLARE = 0x22E,
     MOVE559_FUSION_BOLT = 0x22F,
     MOVE560_FLYING_PRESS = 0x230,
-    MOVE561_MAT_BLOCK = 0x231,
-    MOVE562_BELCH = 0x232,
-    MOVE563_ROTOTILLER = 0x233,
-    MOVE564_STICKY_WEB = 0x234,
-    MOVE565_FELL_STINGER = 0x235,
-    MOVE566_PHANTOM_FORCE = 0x236,
-    MOVE567_TRICK_OR_TREAT = 0x237,
-    MOVE568_NOBLE_ROAR = 0x238,
-    MOVE569_ION_DELUGE = 0x239,
-    MOVE570_PARABOLIC_CHARGE = 0x23A,
-    MOVE571_FOREST_S_CURSE = 0x23B,
-    MOVE572_PETAL_BLIZZARD = 0x23C,
-    MOVE573_FREEZE_DRY = 0x23D,
-    MOVE574_DISARMING_VOICE = 0x23E,
-    MOVE575_PARTING_SHOT = 0x23F,
-    MOVE576_TOPSY_TURVY = 0x240,
-    MOVE577_DRAINING_KISS = 0x241,
-    MOVE578_CRAFTY_SHIELD = 0x242,
-    MOVE579_FLOWER_SHIELD = 0x243,
-    MOVE580_GRASSY_TERRAIN = 0x244,
-    MOVE581_MISTY_TERRAIN = 0x245,
-    MOVE582_ELECTRIFY = 0x246,
-    MOVE583_PLAY_ROUGH = 0x247,
-    MOVE584_FAIRY_WIND = 0x248,
-    MOVE585_MOONBLAST = 0x249,
-    MOVE586_BOOMBURST = 0x24A,
-    MOVE587_FAIRY_LOCK = 0x24B,
-    MOVE588_KING_S_SHIELD = 0x24C,
-    MOVE589_PLAY_NICE = 0x24D,
-    MOVE590_CONFIDE = 0x24E,
-    MOVE591_DIAMOND_STORM = 0x24F,
-    MOVE592_STEAM_ERUPTION = 0x250,
-    MOVE593_HYPERSPACE_HOLE = 0x251,
-    MOVE594_WATER_SHURIKEN = 0x252,
-    MOVE595_MYSTICAL_FIRE = 0x253,
-    MOVE596_SPIKY_SHIELD = 0x254,
-    MOVE597_AROMATIC_MIST = 0x255,
-    MOVE598_EERIE_IMPULSE = 0x256,
-    MOVE599_VENOM_DRENCH = 0x257,
-    MOVE600_POWDER = 0x258,
-    MOVE601_GEOMANCY = 0x259,
-    MOVE602_MAGNETIC_FLUX = 0x25A,
-    MOVE603_HAPPY_HOUR = 0x25B,
-    MOVE604_ELECTRIC_TERRAIN = 0x25C,
-    MOVE605_DAZZLING_GLEAM = 0x25D,
-    MOVE606_CELEBRATE = 0x25E,
-    MOVE607_HOLD_HANDS = 0x25F,
-    MOVE608_BABY_DOLL_EYES = 0x260,
-    MOVE609_NUZZLE = 0x261,
-    MOVE610_HOLD_BACK = 0x262,
-    MOVE611_INFESTATION = 0x263,
-    MOVE612_POWER_UP_PUNCH = 0x264,
-    MOVE613_OBLIVION_WING = 0x265,
-    MOVE614_THOUSAND_ARROWS = 0x266,
-    MOVE615_THOUSAND_WAVES = 0x267,
-    MOVE616_LAND_S_WRATH = 0x268,
-    MOVE617_LIGHT_OF_RUIN = 0x269,
-    MOVE618_ORIGIN_PULSE = 0x26A,
-    MOVE619_PRECIPICE_BLADES = 0x26B,
-    MOVE620_DRAGON_ASCENT = 0x26C,
-    MOVE621_HYPERSPACE_FURY = 0x26D,
 };
 
 enum Counter : unsigned __int8
@@ -1657,6 +1610,9 @@ enum BattleEventVar
     VAR_GENERAL_USE_FLAG = 0x51,
     VAR_SIDE = 0x52,
     VAR_SIDE_EFFECT = 0x53,
+    VAR_INTIMFLAG = 0x54,
+    VAR_HOSTILEFLAG = 0x55,
+    VAR_DISPLAYED = 0x56,
 };
 
 enum SideEffect
@@ -1690,19 +1646,25 @@ enum BattleHandlerEffect
 #endif
 {
     EFFECT_CHANGESTATSTAGE = 0xE,
+    EFFECT_USE_HELD_ITEM = 0,
+    EFFECT_CHANGE_WEATHER = 0x1D,
     EFFECT_ABILITYPOPUPIN = 2,
     EFFECT_ABILITYPOPUPOUT = 3,
     EFFECT_CHANGEHP = 8,
+    EFFECT_CHANGEABILITY = 0x1F,
+    EFFECT_RESET_TURN_FLAG  = 0x16,
     EFFECT_ADDSIDEEFFECT = 0x19,
     EFFECT_CONSUMEITEM = 0x23,
     EFFECT_MESSAGE = 4,
     EFFECT_RECOVERHP = 5,
     EFFECT_ADDCONDITION = 0xC,
+    EFFECT_SET_CONDITION_FLAG = 0x17,
     EFFECT_CURESTATUS = 0x8,
     EFFECT_DAMAGE = 0x7,
     EFFECT_REMOVE_SIDE_EFFECT = 0x1A,
     EFFECT_CURE_STATUS = 0xB,
     EFFECT_SET_HELD_ITEM = 0x20,
+    EFFECT_TRANSFORM = 0x33,
     EFFECT_SET_TURN_FLAG = 0x15,
     EFFECT_COUNTER = 0x26,
     EFFECT_ACTIVATEITEM = 0x22,
@@ -1804,20 +1766,20 @@ enum MoveCondition
     CONDITION_CONFUSION = 6,
     CONDITION_INFATUATION = 7,
     CONDITION_BIND = 8,
-    CONDITION_NIGHTMARE = 9,
+    CONDITION_NIGHTMARE = 9, // Not used
     CONDITION_CURSE = 0xA,
     CONDITION_TAUNT = 0xB,
-    CONDITION_TORMENT = 0xC,
+    CONDITION_TORMENT = 0xC, // Not currently used
     CONDITION_DISABLEMOVE = 0xD,
     CONDITION_DROWSY = 0xE,
     CONDITION_HEALBLOCK = 0xF,
     CONDITION_GASTROACID = 0x10,
-    CONDITION_FORESIGHT = 0x11,
+    CONDITION_FORESIGHT = 0x11, // Not used
     CONDITION_LEECHSEED = 0x12,
-    CONDITION_EMBARGO = 0x13,
+    CONDITION_EMBARGO = 0x13, // Not used
     CONDITION_PERISHSONG = 0x14,
     CONDITION_INGRAIN = 0x15,
-    CONDITION_BLOCK = 0x16,
+    CONDITION_BLOCK = 0x16, // Not used
     CONDITION_ENCORE = 0x17,
     CONDITION_ROOST = 0x18,
     CONDITION_MOVELOCK = 0x19,
@@ -1831,7 +1793,7 @@ enum MoveCondition
     CONDITION_SKYDROP = 0x21,
     CONDITION_ACCURACYUP = 0x22,
     CONDITION_AQUARING = 0x23,
-    CONDITION_24 = 0x24
+    CONDITION_24 = 0x24 // ????
 };
 
 enum Types
@@ -1932,7 +1894,7 @@ enum ItemID
     IT0044_SACRED_ASH = 0x2C,
     IT0045_HP_UP = 0x2D,
     IT0046_PROTEIN = 0x2E,
-    IT0047_IRON = 0x2F,
+    IT0047_UNUSUAL_CANDY = 0x2F,
     IT0048_CARBOS = 0x30,
     IT0049_CALCIUM = 0x31,
     IT0050_RARE_CANDY = 0x32,
@@ -1997,7 +1959,7 @@ enum ItemID
     IT0109_DAWN_STONE = 0x6D,
     IT0110_OVAL_STONE = 0x6E,
     IT0111_ODD_KEYSTONE = 0x6F,
-    IT0112_GRISEOUS_ORB = 0x70,
+    IT0112_THROAT_SPRAY = 0x70,
     IT0113 = 0x71,
     IT0114 = 0x72,
     IT0115 = 0x73,
@@ -2020,8 +1982,8 @@ enum ItemID
     IT0132 = 0x84,
     IT0133 = 0x85,
     IT0134_SWEET_HEART = 0x86,
-    IT0135_ADAMANT_ORB = 0x87,
-    IT0136_LUSTROUS_ORB = 0x88,
+    IT0135_FAIRY_DUST = 0x87,
+    IT0136_PIXIE_PLATE = 0x88,
     IT0137_GREET_MAIL = 0x89,
     IT0138_FAVORED_MAIL = 0x8A,
     IT0139_RSVP_MAIL = 0x8B,
@@ -2045,9 +2007,9 @@ enum ItemID
     IT0157_LUM_BERRY = 0x9D,
     IT0158_SITRUS_BERRY = 0x9E,
     IT0159_FIGY_BERRY = 0x9F,
-    IT0160_WIKI_BERRY = 0xA0,
+    IT0160_MARANGA_BERRY = 0xA0,
     IT0161_MAGO_BERRY = 0xA1,
-    IT0162_AGUAV_BERRY = 0xA2,
+    IT0162_KEE_BERRY = 0xA2,
     IT0163_IAPAPA_BERRY = 0xA3,
     IT0164_RAZZ_BERRY = 0xA4,
     IT0165_BLUK_BERRY = 0xA5,
@@ -2091,7 +2053,7 @@ enum ItemID
     IT0203_SALAC_BERRY = 0xCB,
     IT0204_PETAYA_BERRY = 0xCC,
     IT0205_APICOT_BERRY = 0xCD,
-    IT0206_LANSAT_BERRY = 0xCE,
+    IT0206_ROSELI_BERRY = 0xCE,
     IT0207_STARF_BERRY = 0xCF,
     IT0208_ENIGMA_BERRY = 0xD0,
     IT0209_MICLE_BERRY = 0xD1,
@@ -2140,9 +2102,9 @@ enum ItemID
     IT0252_UP_GRADE = 0xFC,
     IT0253_SHELL_BELL = 0xFD,
     IT0254_SEA_INCENSE = 0xFE,
-    IT0255_LAX_INCENSE = 0xFF,
-    IT0256_LUCKY_PUNCH = 0x100,
-    IT0257_METAL_POWDER = 0x101,
+    IT0255_ATTACK_INSURANCE = 0xFF,
+    IT0256_BLUNDER_POLICY = 0x100,
+    IT0257_STRESS_TESTER = 0x101,
     IT0258_THICK_CLUB = 0x102,
     IT0259_STICK = 0x103,
     IT0260_RED_SCARF = 0x104,
@@ -2159,7 +2121,7 @@ enum ItemID
     IT0271_POWER_HERB = 0x10F,
     IT0272_TOXIC_ORB = 0x110,
     IT0273_FLAME_ORB = 0x111,
-    IT0274_QUICK_POWDER = 0x112,
+    IT0274_MYSTERY_DEVICE = 0x112,
     IT0275_FOCUS_SASH = 0x113,
     IT0276_ZOOM_LENS = 0x114,
     IT0277_METRONOME = 0x115,
@@ -2174,12 +2136,12 @@ enum ItemID
     IT0286_GRIP_CLAW = 0x11E,
     IT0287_CHOICE_SCARF = 0x11F,
     IT0288_STICKY_BARB = 0x120,
-    IT0289_POWER_BRACER = 0x121,
-    IT0290_POWER_BELT = 0x122,
-    IT0291_POWER_LENS = 0x123,
-    IT0292_POWER_BAND = 0x124,
-    IT0293_POWER_ANKLET = 0x125,
-    IT0294_POWER_WEIGHT = 0x126,
+    IT0289_ASSAULT_VEST = 0x121,
+    IT0290_FAIRY_GEM = 0x122,
+    IT0291_WEAKNESS_POLICY = 0x123,
+    IT0292_CLRS_BOOSTER = 0x124,
+    IT0293_SAFETY_GOGGLES = 0x125,
+    IT0294_PROTO_BOOSTER = 0x126,
     IT0295_SHED_SHELL = 0x127,
     IT0296_BIG_ROOT = 0x128,
     IT0297_CHOICE_SPECS = 0x129,
@@ -2199,11 +2161,11 @@ enum ItemID
     IT0311_DRACO_PLATE = 0x137,
     IT0312_DREAD_PLATE = 0x138,
     IT0313_IRON_PLATE = 0x139,
-    IT0314_ODD_INCENSE = 0x13A,
-    IT0315_ROCK_INCENSE = 0x13B,
+    IT0314_CLRS_INVENTION = 0x13A,
+    IT0315_PROTO_ACCELERATOR = 0x13B,
     IT0316_FULL_INCENSE = 0x13C,
-    IT0317_WAVE_INCENSE = 0x13D,
-    IT0318_ROSE_INCENSE = 0x13E,
+    IT0317_LOADED_DICE = 0x13D,
+    IT0318_CLRS_ACCELERATOR = 0x13E,
     IT0319_LUCK_INCENSE = 0x13F,
     IT0320_PURE_INCENSE = 0x140,
     IT0321_PROTECTOR = 0x141,
@@ -2663,6 +2625,202 @@ enum ItemID
     IT0775_EON_FLUTE = 0x307,
 };
 
+enum AbilID
+{
+    ABIL_NULL = 0x0,
+    ABIL001_STENCH = 0x1,
+    ABIL002_DRIZZLE = 0x2,
+    ABIL003_SPEED_BOOST = 0x3,
+    ABIL004_BATTLE_ARMOR = 0x4,
+    ABIL005_STURDY = 0x5,
+    ABIL006_BULLETPROOF = 0x6,
+    ABIL007_CORROSION = 0x7,
+    ABIL008_SAND_VEIL = 0x8,
+    ABIL009_STATIC = 0x9,
+    ABIL010_VOLT_ABSORB = 0xA,
+    ABIL011_WATER_ABSORB = 0xB,
+    ABIL012_GALVANIZE = 0xC,
+    ABIL013_CLOUD_NINE = 0xD,
+    ABIL014_KEEN_SENSES = 0xE,
+    ABIL015_THUNDER_ARMOR = 0xF,
+    ABIL016_COLOR_CHANGE = 0x10,
+    ABIL017_FLUFFY = 0x11,
+    ABIL018_FLASH_FIRE = 0x12,
+    ABIL019_RESILIENT = 0x13,
+    ABIL020_OWN_TEMPO = 0x14,
+    ABIL021_WELL_BAKED_BODY = 0x15,
+    ABIL022_INTIMIDATE = 0x16,
+    ABIL023_SHADOW_TAG = 0x17,
+    ABIL024_ROUGH_SKIN = 0x18,
+    ABIL025_WONDER_GUARD = 0x19,
+    ABIL026_LEVITATE = 0x1A,
+    ABIL027_EFFECT_SPORE = 0x1B,
+    ABIL028_SYNCHRONIZE = 0x1C,
+    ABIL029_STRONG_BODY = 0x1D,
+    ABIL030_NATURAL_CURE = 0x1E,
+    ABIL031_LIGHTNING_ROD = 0x1F,
+    ABIL032_SERENE_GRACE = 0x20,
+    ABIL033_SWIFT_SWIM = 0x21,
+    ABIL034_CHLOROPHYLL = 0x22,
+    ABIL035_ILLUMINATE = 0x23,
+    ABIL036_TRACE = 0x24,
+    ABIL037_HUGE_POWER = 0x25,
+    ABIL038_POISON_POINT = 0x26,
+    ABIL039_INNER_FOCUS = 0x27,
+    ABIL040_MAGMA_ARMOR = 0x28,
+    ABIL041_WATER_VEIL = 0x29,
+    ABIL042_MAGNET_PULL = 0x2A,
+    ABIL043_AMPLIFIER = 0x2B,
+    ABIL044_RAIN_DISH = 0x2C,
+    ABIL045_SAND_STREAM = 0x2D,
+    ABIL046_PRESSURE = 0x2E,
+    ABIL047_THICK_FAT = 0x2F,
+    ABIL048_REFRIGERATE = 0x30,
+    ABIL049_FLAME_BODY = 0x31,
+    ABIL050_PERMAFROST = 0x32,
+    ABIL051_WIND_RIDER = 0x33,
+    ABIL052_HYPER_CUTTER = 0x34,
+    ABIL053_PICKUP = 0x35,
+    ABIL054_TRUANT = 0x36,
+    ABIL055_HUSTLE = 0x37,
+    ABIL056_GOOEY = 0x38,
+    ABIL057_PLUS = 0x39,
+    ABIL058_MINUS = 0x3A,
+    ABIL059_FORECAST = 0x3B,
+    ABIL060_AERILATE = 0x3C,
+    ABIL061_SHED_SKIN = 0x3D,
+    ABIL062_GUTS = 0x3E,
+    ABIL063_MARVEL_SCALE = 0x3F,
+    ABIL064_LIQUID_OOZE = 0x40,
+    ABIL065_OVERGROW = 0x41,
+    ABIL066_BLAZE = 0x42,
+    ABIL067_TORRENT = 0x43,
+    ABIL068_SWARM = 0x44,
+    ABIL069_DETERMINED = 0x45,
+    ABIL070_DROUGHT = 0x46,
+    ABIL071_ARENA_TRAP = 0x47,
+    ABIL072_VITAL_SPIRIT = 0x48,
+    ABIL073_WHITE_SMOKE = 0x49,
+    ABIL074_PURE_POWER = 0x4A,
+    ABIL075_SHELL_ARMOR = 0x4B,
+    ABIL076_AIR_LOCK = 0x4C,
+    ABIL077_TANGLED_FEET = 0x4D,
+    ABIL078_MOTOR_DRIVE = 0x4E,
+    ABIL079_RIVALRY = 0x4F,
+    ABIL080_STEADFAST = 0x50,
+    ABIL081_SNOW_CLOAK = 0x51,
+    ABIL082_GLUTTONY = 0x52,
+    ABIL083_ANGER_POINT = 0x53,
+    ABIL084_UNBURDEN = 0x54,
+    ABIL085_HEATPROOF = 0x55,
+    ABIL086_SIMPLE = 0x56,
+    ABIL087_DRY_SKIN = 0x57,
+    ABIL088_EXPLOIT = 0x58,
+    ABIL089_IRON_FIST = 0x59,
+    ABIL090_POISON_HEAL = 0x5A,
+    ABIL091_ADAPTABILITY = 0x5B,
+    ABIL092_SKILL_LINK = 0x5C,
+    ABIL093_HYDRATION = 0x5D,
+    ABIL094_SOLAR_POWER = 0x5E,
+    ABIL095_QUICK_FEET = 0x5F,
+    ABIL096_NORMALIZE = 0x60,
+    ABIL097_SNIPER = 0x61,
+    ABIL098_MAGIC_GUARD = 0x62,
+    ABIL099_NO_GUARD = 0x63,
+    ABIL100_STALL = 0x64,
+    ABIL101_TECHNICIAN = 0x65,
+    ABIL102_LEAF_GUARD = 0x66,
+    ABIL103_DISTRACTING = 0x67,
+    ABIL104_MOLD_BREAKER = 0x68,
+    ABIL105_SUPER_LUCK = 0x69,
+    ABIL106_AFTERMATH = 0x6A,
+    ABIL107_PIXILATE = 0x6B,
+    ABIL108_FOREWARN = 0x6C,
+    ABIL109_UNAWARE = 0x6D,
+    ABIL110_TENACITY = 0x6E,
+    ABIL111_FILTER = 0x6F,
+    ABIL112_SLOW_START = 0x70,
+    ABIL113_SCRAPPY = 0x71,
+    ABIL114_STORM_DRAIN = 0x72,
+    ABIL115_ICE_BODY = 0x73,
+    ABIL116_SOLID_ROCK = 0x74,
+    ABIL117_SNOW_WARNING = 0x75,
+    ABIL118_HONEY_GATHER = 0x76,
+    ABIL119_FRISK = 0x77,
+    ABIL120_RECKLESS = 0x78,
+    ABIL121_MULTITYPE = 0x79,
+    ABIL122_FLOWER_GIFT = 0x7A,
+    ABIL123_BAD_DREAMS = 0x7B,
+    ABIL124_PICKPOCKET = 0x7C,
+    ABIL125_SHEER_FORCE = 0x7D,
+    ABIL126_CONTRARY = 0x7E,
+    ABIL127_UNNERVE = 0x7F,
+    ABIL128_DEFIANT = 0x80,
+    ABIL129_DEFEATIST = 0x81,
+    ABIL130_CURSED_BODY = 0x82,
+    ABIL131_HEALER = 0x83,
+    ABIL132_FRIEND_GUARD = 0x84,
+    ABIL133_WEAK_ARMOR = 0x85,
+    ABIL134_SLUSH_RUSH = 0x86,
+    ABIL135_TOUGH_CLAWS = 0x87,
+    ABIL136_MAJESTIC_WARD = 0x88,
+    ABIL137_TOXIC_BOOST = 0x89,
+    ABIL138_FLARE_BOOST = 0x8A,
+    ABIL139_GOURMAND = 0x8B,
+    ABIL140_TELEPATHY = 0x8C,
+    ABIL141_MOODY = 0x8D,
+    ABIL142_OVERCOAT = 0x8E,
+    ABIL143_POISON_TOUCH = 0x8F,
+    ABIL144_REGENERATOR = 0x90,
+    ABIL145_BIG_PECKS = 0x91,
+    ABIL146_SAND_RUSH = 0x92,
+    ABIL147_WONDER_SKIN = 0x93,
+    ABIL148_PATIENT = 0x94,
+    ABIL149_ILLUSION = 0x95,
+    ABIL150_IMPOSTER = 0x96,
+    ABIL151_INFILTRATOR = 0x97,
+    ABIL152_CONTAGIOUS = 0x98,
+    ABIL153_MOXIE = 0x99,
+    ABIL154_JUSTIFIED = 0x9A,
+    ABIL155_RATTLED = 0x9B,
+    ABIL156_MAGIC_BOUNCE = 0x9C,
+    ABIL157_SAP_SIPPER = 0x9D,
+    ABIL158_PRANKSTER = 0x9E,
+    ABIL159_SAND_FORCE = 0x9F,
+    ABIL160_IRON_BARBS = 0xA0,
+    ABIL161_ZEN_MODE = 0xA1,
+    ABIL162_ILLUMINATION = 0xA2,
+    ABIL163_TURBOBLAZE = 0xA3,
+    ABIL164_TERAVOLT = 0xA4,
+    ABIL165_AROMA_VEIL = 0xA5,
+    ABIL166_FLOWER_VEIL = 0xA6,
+    ABIL167_CHEEK_POUCH = 0xA7,
+    ABIL168_PROTEAN = 0xA8,
+    ABIL169_FUR_COAT = 0xA9,
+    ABIL170_MAGICIAN = 0xAA,
+    ABIL171_BULLETPROOF = 0xAB,
+    ABIL172_COMPETITIVE = 0xAC,
+    ABIL173_STRONG_JAW = 0xAD,
+    ABIL174_REFRIGERATE = 0xAE,
+    ABIL175_SWEET_VEIL = 0xAF,
+    ABIL176_STANCE_CHANGE = 0xB0,
+    ABIL177_GALE_WINGS = 0xB1,
+    ABIL178_MEGA_LAUNCHER = 0xB2,
+    ABIL179_GRASS_PELT = 0xB3,
+    ABIL180_SYMBIOSIS = 0xB4,
+    ABIL181_TOUGH_CLAWS = 0xB5,
+    ABIL182_PIXILATE = 0xB6,
+    ABIL183_GOOEY = 0xB7,
+    ABIL184_AERILATE = 0xB8,
+    ABIL185_PARENTAL_BOND = 0xB9,
+    ABIL186_DARK_AURA = 0xBA,
+    ABIL187_FAIRY_AURA = 0xBB,
+    ABIL188_AURA_BREAK = 0xBC,
+    ABIL189_PRIMORDIAL_SEA = 0xBD,
+    ABIL190_DESOLATE_LAND = 0xBE,
+    ABIL191_DELTA_STREAM = 0xBF,
+};
+
 enum PkmField
 {
     PF_PID = 0x0,
@@ -2866,6 +3024,20 @@ enum MoveFailCause
     MOVEFAIL_IGNORE_SLEEPING = 0x18,
     MOVEFAIL_NO_REACTION = 0x19,
     MOVEFAIL_OTHER = 0x1A,
+};
+
+enum BattleActionType
+{
+    ACTION_DEFAULT = 0x0,
+    ACTION_ATTACK = 0x1,
+    ACTION_ITEM = 0x2,
+    ACTION_SWITCH = 0x3,
+    ACTION_RUN = 0x4,
+    ACTION_SHIFT = 0x5,
+    ACTION_ROTATE = 0x6,
+    ACTION_SKIP = 0x7,
+    ACTION_RECPLAY_TIMEOVER = 0x8,
+    ACTION_RECPLAY_ERROR = 0x9,
 };
 
 enum ConditionFlag
@@ -3075,13 +3247,63 @@ struct TrainerBattleSetup
     __int16 field_20[4];
 };
 
-struct ConditionData
+struct EffectivenessRecorder
 {
-    unsigned __int32 status : 3;
-    unsigned __int32 turncount : 3;
-    unsigned __int32 field7 : 3;
-    unsigned __int32 param : 3;
-    unsigned __int32 rest : 20;
+    int effectiveness[24];
+};
+
+// struct ConditionData
+// {
+//     unsigned __int32 status : 3;
+//     unsigned __int32 turncount : 3;
+//     unsigned __int32 field7 : 3;
+//     unsigned __int32 param : 3;
+//     unsigned __int32 rest : 20;
+// };
+
+struct ConditionData_PokeTurn
+{
+    unsigned __int32 type : 3;
+    unsigned __int32 turns : 6;
+    unsigned __int32 monID : 6;
+    unsigned __int32 param : 16;
+    unsigned __int32 flag : 1;
+};
+
+struct ConditionData_Poke
+{
+    unsigned __int32 type : 3;
+    unsigned __int32 monID : 6;
+    unsigned __int32 param : 16;
+    unsigned __int32 flag : 1;
+    unsigned __int32 pad : 6;
+};
+
+struct ConditionData_Turn
+{
+    unsigned __int32 type : 3;
+    unsigned __int32 turns : 6;
+    unsigned __int32 param : 16;
+    unsigned __int32 flag : 1;
+    unsigned __int32 pad : 6;
+};
+
+struct ConditionData_Permanent
+{
+    unsigned __int32 type : 3;
+    unsigned __int32 minTurns : 6;
+    unsigned __int32 paramOrMaxTurns : 16;
+    unsigned __int32 flag : 1;
+    unsigned __int32 pad : 6;
+};
+
+union SWAN_ALIGNED(4) ConditionData
+{
+    u32 raw;
+    ConditionData_Permanent *permanent;
+    ConditionData_Poke *poke;
+    ConditionData_PokeTurn *poketurn;
+    ConditionData_Turn *turn;
 };
 
 struct EscapeInfo
@@ -3113,6 +3335,17 @@ struct Btlv_StringParam
     u8 strTypeAndArgCount;
     int args[8];
 };
+
+struct MoveAnimCtrl
+{
+    unsigned __int16 MoveID;
+    unsigned __int8 attackerPos;
+    unsigned __int8 targetPos;
+    unsigned __int8 effectIndex;
+    unsigned __int8 flags;
+    unsigned __int16 subEff;
+};
+
 struct ItemBattleStats
 {
     u8 CureInflict;
@@ -3132,6 +3365,20 @@ struct ItemBattleStats
     char Friendship3;
     char field_1F;
     char field_20;
+};
+
+struct EventWorkStack
+{
+    u8 work[512];
+    u16 size[16];
+    u32 sp;
+};
+
+struct EventWorkSave
+{
+    u16 Works[431];
+    u8 FlagBytes[383];
+    u8 CanRespawnHiddenItems;
 };
 
 struct ItemData
@@ -3398,19 +3645,20 @@ struct PokeCon
 };
 struct BattleAction_Default
 {
-    unsigned __int32 cmd : 4;
+    unsigned __int32 actionType : 4;
     unsigned __int32 param : 28;
 };
 struct BattleAction_Fight
 {
-    unsigned __int32 cmd : 4;
-    unsigned __int32 targetPos : 4;
-    unsigned __int32 moveID : 16;
-    unsigned __int32 pad : 8;
+    unsigned __int32 actionType : 4;
+    unsigned __int32 targetPos : 3;
+    unsigned __int32 moveID : 19;
+    unsigned __int32 moveInfoFlag : 1;
+    unsigned __int32 pad : 5;
 };
 struct BattleAction_Item
 {
-    unsigned __int32 cmd : 4;
+    unsigned __int32 actionType : 4;
     unsigned __int32 targetIdx : 3;
     unsigned __int32 itemID : 16;
     unsigned __int32 param : 8;
@@ -3418,7 +3666,7 @@ struct BattleAction_Item
 };
 struct BattleAction_Switch
 {
-    unsigned __int32 cmd : 4;
+    unsigned __int32 actionType : 4;
     unsigned __int32 posIdx : 3;
     unsigned __int32 memberIdx : 3;
     unsigned __int32 depleteFlag : 1;
@@ -3426,16 +3674,43 @@ struct BattleAction_Switch
 };
 struct BattleAction_Run
 {
-    unsigned __int32 cmd : 4;
+    unsigned __int32 actionType : 4;
     unsigned __int32 pad : 28;
 };
+
+struct BattleAction_Shift
+{
+    unsigned __int32 actionType : 4;
+    unsigned __int32 shift : 28;
+};
+
+struct BattleAction_Rotate
+{
+    unsigned __int32 actionType : 4;
+    unsigned __int32 rotation : 3;
+    unsigned __int32 pad : 3;
+    unsigned __int32 unkFlag : 1;
+    unsigned __int32 pad2 : 21;
+};
+
+// union BattleActionParam
+// {
+//     BattleAction_Fight Attack;
+//     BattleAction_Item Item;
+//     BattleAction_Switch Switch;
+//     BattleAction_Run Run;
+//     BattleAction_Default Default;
+// };
+
 union BattleActionParam
 {
+    BattleAction_Default Default;
     BattleAction_Fight Attack;
     BattleAction_Item Item;
     BattleAction_Switch Switch;
     BattleAction_Run Run;
-    BattleAction_Default Default;
+    BattleAction_Shift Shift;
+    BattleAction_Rotate Rotate;
 };
 
 struct SWAN_ALIGNED(4) BtlSetup
@@ -3669,7 +3944,7 @@ struct SWAN_PACKED SWAN_ALIGNED(4) BtlClientWk
     BattleField *battleField;
     _BYTE gap38[24];
     int *adapter;
-    char* btlvCore;
+    char *btlvCore;
     Btlv_StringParam strParam;
     int field_7C;
     Btlv_StringParam field_80;
@@ -3851,13 +4126,14 @@ struct SWAN_PACKED SWAN_ALIGNED(2) BtlvCore
     HeapID heapID;
 };
 
-
 struct ServerCommandQueue
 {
     u32 writePtr;
     u32 readPtr;
     u8 buffer[3000];
 };
+
+
 
 struct SVCL_WORK
 {
@@ -3886,6 +4162,26 @@ struct HandlerParam_Header
     u32 flags;
 };
 
+struct SWAN_ALIGNED(4) HandlerParam_DelayMoveDamage
+{
+    HandlerParam_Header header;
+    u8 attackerID;
+    u8 targetID;
+    __int16 MoveID;
+};
+
+// struct HandlerParam_Header
+// {
+//     unsigned __int32 paramType : 8;
+//     unsigned __int32 monID : 5;
+//     unsigned __int32 size : 10;
+//     unsigned __int32 fDisableAbilityPopups : 1;
+//     unsigned __int32 fDisableExecution1 : 1;
+//     unsigned __int32 fDisableExecution2 : 1;
+//     unsigned __int32 isHostile : 1;
+//     unsigned __int32 pad : 5;
+// };
+
 struct SWAN_ALIGNED(2) HandlerParam_SetCounter
 {
     HandlerParam_Header header;
@@ -3893,7 +4189,6 @@ struct SWAN_ALIGNED(2) HandlerParam_SetCounter
     Counter counterID;
     u8 value;
 };
-
 
 struct SWAN_ALIGNED(4) HandlerParam_StrParams
 {
@@ -3933,6 +4228,7 @@ struct HandlerParam_ChangeStatStage
     u8 poke_cnt;
     u8 pokeID[6];
     HandlerParam_StrParams exStr;
+    // u8 isHostile;
 };
 
 struct HandlerParam_AddSideEffect
@@ -3948,6 +4244,13 @@ struct HandlerParam_Message
 {
     HandlerParam_Header header;
     HandlerParam_StrParams str;
+};
+
+struct HandlerParam_Transform
+{
+    HandlerParam_Header header;
+    u8 pokeID;
+    HandlerParam_StrParams exStr;
 };
 
 struct MoveParam
@@ -4069,59 +4372,7 @@ struct HandlerParam_CureCondition
     HandlerParam_StrParams exStr;
 };
 
-struct SWAN_ALIGNED(8) TrainerAIEnv
-{
-    char aiState;
-    unsigned __int8 consideredMoveIndex;
-    unsigned __int16 moveID;
-    int scores[4];
-    char field_14;
-    char field_15;
-    char field_16;
-    char field_17;
-    char field_18;
-    char field_19;
-    char field_1A;
-    char field_1B;
-    char field_1C;
-    char field_1D;
-    char field_1E;
-    char field_1F;
-    char field_20;
-    char field_21;
-    char field_22;
-    char field_23;
-    unsigned __int16 bestScoreForTarget[6];
-    char bestMoveIndexForTarget[6];
-    int param;
-    int aiFlags;
-    _DWORD aiFlagsFromTrainerData;
-    char flags;
-    char scriptID;
-    char chosenMoveIndex;
-    char chosenTarget;
-    unsigned __int8 randPerMoveIndex[4];
-    unsigned __int16 knownMoves[6][4];
-    u8 knownAbilities[6];
-    _BYTE gap82[18];
-    unsigned __int8 attackerPos;
-    unsigned __int8 defenderPos;
-    _DWORD BattleStyle;
-    _DWORD BattleType;
-    __int16 HeapID;
-    _DWORD ScriptsHandle;
-    _DWORD ItemArcHandle;
-    int scriptPtr;
-    MainModule *mainModule;
-    int *serverFlow;
-    PokeCon *pokeCon;
-    BattleMon *attacker;
-    BattleMon *defender;
-    int result;
-    int field_C8;
-    int seededRandom;
-    _QWORD time;
-};
+
 
 struct SWAN_ALIGNED(4) HandlerParam_Damage
 {
@@ -4132,6 +4383,16 @@ struct SWAN_ALIGNED(4) HandlerParam_Damage
     u16 effectNo;
     u8 posFrom;
     u8 posTo;
+    HandlerParam_StrParams exStr;
+};
+
+struct HandlerParam_ChangeAbility
+{
+    HandlerParam_Header header;
+    u16 abilityID;
+    u8 pokeID;
+    u8 fSameAbilityEffective;
+    u8 fSkipSwitchInEvent;
     HandlerParam_StrParams exStr;
 };
 
@@ -4214,6 +4475,26 @@ struct CalcDamageRecord
     calc_damage_record record[6];
 };
 
+struct UnityTowerVisitor
+{
+    wchar_t Name[10];
+    int TID;
+    u8 Country;
+    u8 Province;
+    char field_1A;
+    char field_1B;
+    char field_1C;
+    char Sex;
+    char field_1E;
+    char field_1F;
+    u16 PlayerTradePkm;
+    unsigned __int16 VisitorTradePkm;
+    unsigned __int8 Hobby;
+    unsigned __int8 TradedPlacesCount;
+    unsigned __int8 Flags;
+    char field_27;
+};
+
 struct PokeSetStackUnit
 {
     PokeSet TargetOriginal;
@@ -4270,7 +4551,7 @@ struct SWAN_ALIGNED(8) ServerFlow
     MoveRecord moveRecord;
     FaintRecord faintRecord;
     int **evolutionDataPtr;
-    int *moveAnimContr;
+    MoveAnimCtrl *moveAnimContr;
     MoveStealParam *moveStealParam;
     MoveStealParam *magicCoatParam;
     HitCheckParam *hitCheckParam;
@@ -4399,11 +4680,36 @@ struct SWAN_ALIGNED(4) HandlerParam_RemoveSideEffect
     u8 side;
 };
 
+struct SWAN_ALIGNED(4) HandlerParam_SetConditionFlag
+{
+    HandlerParam_Header header;
+    ConditionFlag flag;
+    u8 monID;
+};
+
 struct SWAN_ALIGNED(4) HandlerParam_SetTurnFlag
 {
     HandlerParam_Header header;
     TurnFlag flag;
     u8 pokeID;
+};
+
+struct SWAN_ALIGNED(4) HandlerParam_ChangeWeather
+{
+    HandlerParam_Header header;
+    u8 weather;
+    u8 turnCount;
+    u8 fAirLock;
+    u8 pad;
+    HandlerParam_StrParams strParam;
+};
+
+struct HandlerParam_UseHeldItem
+{
+    HandlerParam_Header header;
+    unsigned __int32 fAllowAtFullHP : 1;
+    unsigned __int32 fAllowOnFaintedMons : 1;
+    unsigned __int32 pad : 30;
 };
 
 struct HandlerParam_SetItem
@@ -4430,15 +4736,64 @@ struct HandlerParam_AddAnimation
     HandlerParam_StrParams exStr;
 };
 
-struct MoveAnimCtrl
+
+struct SWAN_ALIGNED(8) TrainerAIEnv
 {
-    unsigned __int16 MoveID;
+    char aiState;
+    unsigned __int8 consideredMoveIndex;
+    unsigned __int16 moveID;
+    int scores[4];
+    char field_14;
+    char field_15;
+    char field_16;
+    char field_17;
+    char field_18;
+    char field_19;
+    char field_1A;
+    char field_1B;
+    char field_1C;
+    char field_1D;
+    char field_1E;
+    char field_1F;
+    char field_20;
+    char field_21;
+    char field_22;
+    char field_23;
+    unsigned __int16 bestScoreForTarget[6];
+    char bestMoveIndexForTarget[6];
+    int param;
+    int aiFlags;
+    _DWORD aiFlagsFromTrainerData;
+    char flags;
+    char scriptID;
+    char chosenMoveIndex;
+    char chosenTarget;
+    unsigned __int8 randPerMoveIndex[4];
+    unsigned __int16 knownMoves[6][4];
+    u8 knownAbilities[6];
+    _BYTE gap82[18];
     unsigned __int8 attackerPos;
-    unsigned __int8 targetPos;
-    unsigned __int8 effectIndex;
-    unsigned __int8 flags;
-    unsigned __int16 subEff;
+    unsigned __int8 defenderPos;
+    _DWORD BattleStyle;
+    _DWORD BattleType;
+    __int16 HeapID;
+    _DWORD ScriptsHandle;
+    _DWORD ItemArcHandle;
+    int scriptPtr;
+    MainModule *mainModule;
+    ServerFlow *serverFlow;
+    PokeCon *pokeCon;
+    BattleMon *attacker;
+    BattleMon *defender;
+    int result;
+    int field_C8;
+    int seededRandom;
+    _QWORD time;
 };
+
+
+const BattleMonValue BattleMonValues[8] = {
+    VALUE_ATTACK_STAGE, VALUE_DEFENSE_STAGE, VALUE_SPEED_STAGE, VALUE_SPECIAL_ATTACK_STAGE, VALUE_SPECIAL_DEFENSE_STAGE, VALUE_ACCURACY_STAGE, VALUE_EVASION_STAGE, VALUE_NULL};
 
 //
 //
@@ -4585,25 +4940,7 @@ struct MoveAnimCtrl
 //
 // TYPE CHARTS
 //
-const int FreezeDryTypeChart[18][18] = {
-    {4, 4, 4, 4, 4, 2, 4, 0, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4},
-    {8, 4, 2, 2, 4, 8, 2, 0, 8, 4, 4, 4, 4, 2, 8, 4, 8, 2},
-    {4, 8, 4, 4, 4, 2, 8, 4, 2, 4, 4, 8, 2, 4, 4, 4, 4, 4},
-    {4, 4, 4, 2, 2, 2, 4, 2, 0, 4, 4, 8, 4, 4, 4, 4, 4, 8},
-    {4, 4, 0, 8, 4, 8, 2, 4, 8, 8, 4, 2, 8, 4, 4, 4, 4, 4},
-    {4, 2, 8, 4, 2, 4, 8, 4, 2, 8, 4, 4, 4, 4, 8, 4, 4, 4},
-    {4, 2, 2, 2, 4, 4, 4, 2, 2, 2, 4, 8, 4, 8, 4, 4, 8, 2},
-    {0, 4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 8, 4, 4, 2, 4},
-    {4, 4, 4, 4, 4, 8, 4, 4, 2, 2, 2, 4, 2, 4, 8, 4, 4, 8},
-    {4, 4, 4, 4, 4, 2, 8, 4, 8, 2, 2, 8, 4, 4, 8, 2, 4, 4},
-    {4, 4, 4, 4, 8, 8, 4, 4, 4, 8, 2, 2, 4, 4, 4, 2, 4, 4},
-    {4, 4, 2, 2, 8, 8, 2, 4, 2, 2, 8, 2, 4, 4, 4, 2, 4, 4},
-    {4, 4, 8, 4, 0, 4, 4, 4, 4, 4, 8, 2, 2, 4, 4, 2, 4, 4},
-    {4, 8, 4, 8, 4, 4, 4, 4, 2, 4, 4, 4, 4, 2, 4, 4, 0, 4},
-    {4, 4, 8, 4, 8, 4, 4, 4, 2, 2, 8, 8, 4, 4, 2, 8, 4, 4},
-    {4, 4, 4, 4, 4, 4, 4, 4, 2, 4, 4, 4, 4, 4, 4, 8, 4, 0},
-    {4, 2, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 8, 4, 4, 2, 2},
-    {4, 8, 4, 2, 4, 4, 4, 4, 2, 2, 4, 4, 4, 4, 4, 8, 8, 4}};
+const int FreezeDryTypeChart[18][18] = {{4, 4, 4, 4, 4, 2, 4, 0, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4}, {8, 4, 2, 2, 4, 8, 2, 0, 8, 4, 4, 4, 4, 2, 8, 4, 8, 2}, {4, 8, 4, 4, 4, 2, 8, 4, 2, 4, 4, 8, 2, 4, 4, 4, 4, 4}, {4, 4, 4, 2, 2, 2, 4, 2, 0, 4, 4, 8, 4, 4, 4, 4, 4, 8}, {4, 4, 0, 8, 4, 8, 2, 4, 8, 8, 4, 2, 8, 4, 4, 4, 4, 4}, {4, 2, 8, 4, 2, 4, 8, 4, 2, 8, 4, 4, 4, 4, 8, 4, 4, 4}, {4, 2, 2, 2, 4, 4, 4, 2, 2, 2, 4, 8, 4, 8, 4, 4, 8, 2}, {0, 4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 8, 4, 4, 2, 4}, {4, 4, 4, 4, 4, 8, 4, 4, 2, 2, 2, 4, 2, 4, 8, 4, 4, 8}, {4, 4, 4, 4, 4, 2, 8, 4, 8, 2, 2, 8, 4, 4, 8, 2, 4, 4}, {4, 4, 4, 4, 8, 8, 4, 4, 4, 8, 2, 2, 4, 4, 4, 2, 4, 4}, {4, 4, 2, 2, 8, 8, 2, 4, 2, 2, 8, 2, 4, 4, 4, 2, 4, 4}, {4, 4, 8, 4, 0, 4, 4, 4, 4, 4, 8, 2, 2, 4, 4, 2, 4, 4}, {4, 8, 4, 8, 4, 4, 4, 4, 2, 4, 4, 4, 4, 2, 4, 4, 0, 4}, {4, 4, 8, 4, 8, 4, 4, 4, 2, 2, 8, 8, 4, 4, 2, 8, 4, 4}, {4, 4, 4, 4, 4, 4, 4, 4, 2, 4, 4, 4, 4, 4, 4, 8, 4, 0}, {4, 2, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 8, 4, 4, 2, 2}, {4, 8, 4, 2, 4, 4, 4, 4, 2, 2, 4, 4, 4, 4, 4, 8, 8, 4}};
 
 const int SkyUppercutTypeChart[18][18] = {
     {4, 4, 4, 4, 4, 2, 4, 0, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4},
@@ -4645,6 +4982,49 @@ const int CorrosionTypeChart[18][18] = {
     {4, 2, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 8, 4, 4, 2, 2},
     {4, 8, 4, 2, 4, 4, 4, 4, 2, 2, 4, 4, 4, 4, 4, 8, 8, 4}};
 
+const int WindMoves[17] = {
+    MOVE403_AIR_SLASH,
+    MOVE542_HURRICANE,
+    MOVE257_HEAT_WAVE,
+    MOVE466_OMINOUS_WIND,
+    MOVE318_SILVER_WIND,
+    MOVE016_GUST,
+    MOVE059_BLIZZARD,
+    MOVE259_TORMENT,
+    MOVE392_FAIRY_WIND,
+    MOVE180_DIAMOND_STORM,
+    MOVE031_RAZOR_WINDS,
+    MOVE177_AEROBLAST,
+    MOVE196_ICY_WIND,
+    MOVE366_TAILWIND,
+    MOVE239_TWISTER,
+    MOVE018_WHIRLWIND,
+    MOVE314_AIR_CUTTER};
+
+const int BulletproofMoves[22] = {
+    MOVE491_ACID_SPRAY,
+    MOVE396_AURA_SPHERE,
+    MOVE140_BARRAGE,
+    MOVE331_BULLET_SEED,
+    MOVE121_EGG_BOMB,
+    MOVE486_ELECTRO_BALL,
+    MOVE412_ENERGY_BALL,
+    MOVE411_FOCUS_BLAST,
+    MOVE360_GYRO_BALL,
+    MOVE301_ICE_BALL,
+    MOVE443_MAGNET_BOMB,
+    MOVE426_MUD_BOMB,
+    MOVE190_OCTAZOOKA,
+    MOVE461_POLLEN_PUFF,
+    MOVE350_ROCK_BLAST,
+    MOVE439_ROCK_WRECKER,
+    MOVE545_SEARING_SHOT,
+    MOVE402_SEED_BOMB,
+    MOVE247_SHADOW_BALL,
+    MOVE188_SLUDGE_BOMB,
+    MOVE311_WEATHER_BALL,
+    MOVE192_ZAP_CANNON};
+
 const int FLAIL_POWER_TABLE[6] = {
     0xC80001, 0x960004, 0x640009, 0x500010, 0x280020, 0x140030};
 
@@ -4663,6 +5043,26 @@ const int normalTypeChart[18][18] = {
     {4, 4, 2, 2, 8, 8, 2, 4, 2, 2, 8, 2, 4, 4, 4, 2, 4, 4},
     {4, 4, 8, 4, 0, 4, 4, 4, 4, 4, 8, 2, 2, 4, 4, 2, 4, 4},
     {4, 8, 4, 8, 4, 4, 4, 4, 2, 4, 4, 4, 4, 2, 4, 4, 0, 4},
+    {4, 4, 8, 4, 8, 4, 4, 4, 2, 2, 2, 8, 4, 4, 2, 8, 4, 4},
+    {4, 4, 4, 4, 4, 4, 4, 4, 2, 4, 4, 4, 4, 4, 4, 8, 4, 0},
+    {4, 2, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 8, 4, 4, 2, 2},
+    {4, 8, 4, 2, 4, 4, 4, 4, 2, 2, 4, 4, 4, 4, 4, 8, 8, 4}};
+
+const int SacredSwordTypeChart[18][18] = {
+    {4, 4, 4, 4, 4, 2, 4, 4, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4},
+    {8, 4, 2, 2, 4, 8, 2, 4, 8, 4, 4, 4, 4, 2, 8, 4, 8, 2},
+    {4, 8, 4, 4, 4, 2, 8, 4, 2, 4, 4, 8, 2, 4, 4, 4, 4, 4},
+    {4, 4, 4, 2, 2, 2, 4, 2, 0, 4, 4, 8, 4, 4, 4, 4, 4, 8},
+    {4, 4, 0, 8, 4, 8, 2, 4, 8, 8, 4, 2, 8, 4, 4, 4, 4, 4},
+    {4, 2, 8, 4, 2, 4, 8, 4, 2, 8, 4, 4, 4, 4, 8, 4, 4, 4},
+    {4, 2, 2, 2, 4, 4, 4, 2, 2, 2, 4, 8, 4, 8, 4, 4, 8, 2},
+    {0, 4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 8, 4, 4, 2, 4},
+    {4, 4, 4, 4, 4, 8, 4, 4, 2, 2, 2, 4, 2, 4, 8, 4, 4, 8},
+    {4, 4, 4, 4, 4, 2, 8, 4, 8, 2, 2, 8, 4, 4, 8, 2, 4, 4},
+    {4, 4, 4, 4, 8, 8, 4, 4, 4, 8, 2, 2, 4, 4, 4, 2, 4, 4},
+    {4, 4, 2, 2, 8, 8, 2, 4, 2, 2, 8, 2, 4, 4, 4, 2, 4, 4},
+    {4, 4, 8, 4, 0, 4, 4, 4, 4, 4, 8, 2, 2, 4, 4, 2, 4, 4},
+    {4, 8, 4, 8, 4, 4, 4, 4, 2, 4, 4, 4, 4, 2, 4, 4, 4, 4},
     {4, 4, 8, 4, 8, 4, 4, 4, 2, 2, 2, 8, 4, 4, 2, 8, 4, 4},
     {4, 4, 4, 4, 4, 4, 4, 4, 2, 4, 4, 4, 4, 4, 4, 8, 4, 0},
     {4, 2, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 8, 4, 4, 2, 2},

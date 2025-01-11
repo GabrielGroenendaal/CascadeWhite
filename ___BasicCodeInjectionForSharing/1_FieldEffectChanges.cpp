@@ -1,16 +1,21 @@
 #include "codeinjection_new.h"
 #include "kPrint.h"
 
+extern u32 g_GameBeaconSys;
+STRUCT_DECLARE(GameData)
+#define GAME_DATA *(GameData **)(g_GameBeaconSys + 4)
+
 extern "C"
 {
+    void THUMB_BRANCH_copyTrainerNameFromStrbuf(wchar_t *pDest, StrBuf *pSrc)
+    {
+        GFL_StrBufStoreString(pSrc, pDest, 8);
+    }
 
     bool PersonalCheckIfMoveCondition(BattleMon *a1, MoveCondition a2)
     {
-        if (a1->HeldItem == 289 && a2 == CONDITION_TAUNT)
-        {
-            return true;
-        }
-        else if (a2 == CONDITION_BLOCK && ((a1->Conditions[CONDITION_CURSE] & 7) != 0))
+
+        if (a2 == CONDITION_BLOCK && ((a1->Conditions[CONDITION_CURSE] & 7) != 0))
         {
             return true;
         }
@@ -133,7 +138,7 @@ extern "C"
             trainerId = currentTrainer->TrID;
             trainerClass = currentTrainer->TrClass;
 
-            k::Printf("\n\nTrainer ID is %d\nTrainer Class is %d\n\n", trainerId, trainerClass);
+            // k::Printf("\n\nTrainer ID is %d\nTrainer Class is %d\n\n", trainerId, trainerClass);
             // PreSet Spikes
             // Checks TrainerId
             if (trainerClass == 192)
@@ -148,13 +153,14 @@ extern "C"
             }
             if (trainerId == 491)
             {
+                // k::Printf("\nPRINT WE ARE HERE\n");
                 ConditionData Permanent = Condition_MakePermanent();
                 HandlerParam_AddAnimation *addAnimation = (HandlerParam_AddAnimation *)BattleHandler_PushWork(a1, EFFECT_ADD_ANIMATION, 0);
                 addAnimation->animNo = MOVE137_GLARE;
                 addAnimation->pos_from = 1;
                 addAnimation->pos_to = 0;
                 BattleHandler_PopWork(a1, addAnimation);
-                CreateSpikes(0, a1, 0, 0, 0, 14, Permanent, 208);
+                CreateSpikes(0, a1, 0, 0, 0, 15, Permanent, 208);
             }
         }
 
@@ -191,14 +197,19 @@ extern "C"
         int v12;                // [sp+0h] [bp-20h]
         unsigned int i;         // [sp+4h] [bp-1Ch]
 
+        // k::Printf("'\n\nCheck 1 for ServerFlow Setup Before First Turn");
         serverCommandQueue = a1->serverCommandQueue;
         serverCommandQueue->writePtr = 0;
         v12 = 0;
         serverCommandQueue->readPtr = 0;
         v12 = HandleFieldEffects(a1);
+        // k::Printf("'\n\nCheck 2 for ServerFlow Setup Before First Turn");
+        v12 = 1;
 
         for (i = 0; i < 4; ++i)
         {
+            // k::Printf("'\n\nCheck 3 for ServerFlow Setup Before First Turn");
+
             ClientWork = BattleServer_GetClientWork(a1->server, i);
             v5 = ClientWork;
             if (ClientWork)
@@ -357,6 +368,14 @@ extern "C"
         }
 
         if (v8 == VALUE_DEFENSE_STAGE && BattleMon_HasType(AttackingMon, TYPE_ICE) && ServerEvent_GetWeather(a1) == 3)
+        {
+            RealStat = (unsigned __int16)fixed_round(RealStat, 6144);
+        }
+        if (v8 == VALUE_DEFENSE_STAGE && AttackingMon->HeldItem == IT0538_EVIOLITE && Handler_CheckEvolution(a1, ID))
+        {
+            RealStat = (unsigned __int16)fixed_round(RealStat, 6144);
+        }
+        if (v8 == VALUE_DEFENSE_STAGE && BattleMon_GetValue(AttackingMon, VALUE_EFFECTIVE_ABILITY) == ABIL063_MARVEL_SCALE && BattleMon_GetStatus(AttackingMon))
         {
             RealStat = (unsigned __int16)fixed_round(RealStat, 6144);
         }
