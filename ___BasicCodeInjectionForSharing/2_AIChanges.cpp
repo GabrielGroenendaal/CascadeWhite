@@ -1059,7 +1059,7 @@ extern "C"
             TypeEffectiveness,
             ratio,
             critFlag,
-            v15 == 0,
+            isSimulation,
             &v12);
         --a1->SimulationCounter;
 
@@ -2021,10 +2021,22 @@ extern "C"
     //     return a2->result;
     // }
 
+    int multiplySpeed(int moveID, int speed){
+        if (moveID == MOVE097_AGILITY || moveID == MOVE504_SHELL_SMASH || moveID == MOVE475_AUTOTOMIZE || moveID == MOVE397_ROCK_POLISH || moveID == MOVE366_TAILWIND || moveID == MOVE508_SHIFT_GEAR){
+            return speed * 2;
+        } else if (moveID == MOVE289_VICTORY_DANCE || moveID == MOVE483_QUIVER_DANCE || moveID == MOVE349_DRAGON_DANCE || moveID == MOVE488_FLAME_CHARGE || moveID == MOVE104_DOUBLE_TEAM) {
+            return speed * 1.5;
+        } else {
+            return speed;
+        }
+    }
+
+    // Used for Checking for One Shot or 2Shot
     int THUMB_BRANCH_AI072_Nop(void *a1, TrainerAIEnv *a2)
     {
         __int16 ExistFrontPokePos; // r0
         unsigned int pokeCount;
+        BattleMon *defender;
         u8 opposingPokePos[5];
         unsigned int k;
 
@@ -2034,22 +2046,70 @@ extern "C"
         for (k = 0; k < pokeCount; (k + 1))
         {
             int i = 0;
-            int MoveCount = BattleMon_GetMoveCount(a2->defender);
+            defender = Handler_GetBattleMon(a2->serverFlow, opposingPokePos[k]);
+            int MoveCount = BattleMon_GetMoveCount(defender);
             int currentHp = BattleMon_GetValue(a2->attacker, VALUE_CURRENT_HP);
 
             do
             {
                 int damage = Handler_SimulationDamage(a2->serverFlow,
-                                                      BattleMon_GetID(a2->defender),
+                                                      BattleMon_GetID(defender),
                                                       BattleMon_GetID(a2->attacker),
-                                                      Move_GetID(a2->defender, i));
+                                                      Move_GetID(defender, i), false, false);
 
                 // If the target is faster the the Pokemon using the set up move, doubles the damage
                 // now checking for a 2HKO
-                if (Handler_CalculateSpeed(a2->serverFlow, a2->defender, 1) > Handler_CalculateSpeed(a2->serverFlow, a2->attacker, 1))
+                if (Handler_CalculateSpeed(a2->serverFlow, defender, 1) > multiplySpeed(a2->moveID, Handler_CalculateSpeed(a2->serverFlow, a2->attacker, 1)))
                 {
                     damage *= 2;
                 }
+
+                // If currentHP is less than or equal to damage, performs the jump
+                if (AIConditionalJump(a1, 6, currentHp, damage))
+                {
+                    k = pokeCount;
+                    break;
+                }
+
+                // Else, incremenets and checks the next move.
+                i++;
+            } while (i < MoveCount);
+        }
+        return a2->result;
+    }
+
+
+ 
+    // Used for Priority
+    int THUMB_BRANCH_AI104_Nop(void *a1, TrainerAIEnv *a2)
+    {
+
+         __int16 ExistFrontPokePos; // r0
+        unsigned int pokeCount;
+        BattleMon *defender;
+        u8 opposingPokePos[5];
+        unsigned int k;
+
+        int moveId = a2->moveID;
+        
+
+        ExistFrontPokePos = Handler_GetExistFrontPokePos(a2->serverFlow, (int)a2->attacker->ID);
+        pokeCount = Handler_ExpandPokeID(a2->serverFlow, ExistFrontPokePos | 0x100, opposingPokePos);
+
+        for (k = 0; k < pokeCount; (k + 1))
+        {
+            int i = 0;
+           defender = Handler_GetBattleMon(a2->serverFlow, opposingPokePos[k]);
+            int MoveCount = BattleMon_GetMoveCount(defender);
+            int currentHp = BattleMon_GetValue(a2->attacker, VALUE_CURRENT_HP);
+
+            do
+            {
+                int damage = Handler_SimulationDamage(a2->serverFlow,
+                                                      BattleMon_GetID(defender),
+                                                      BattleMon_GetID(a2->attacker),
+                                                      Move_GetID(defender, i), false, false);
+
 
                 // If currentHP is less than or equal to damage, performs the jump
                 if (AIConditionalJump(a1, 6, currentHp, damage))
@@ -2067,11 +2127,12 @@ extern "C"
 
     // Checks Damage Threshold for negligible damage
     // USED FOR SET UP
-    int THUMB_BRANCH_A1060_Nop(void *a1, TrainerAIEnv *a2)
+    int THUMB_BRANCH_AI060_Nop(void *a1, TrainerAIEnv *a2)
     {
         __int16 ExistFrontPokePos; // r0
         unsigned int pokeCount;
         u8 opposingPokePos[5];
+        BattleMon *defender;
         unsigned int k;
 
         ExistFrontPokePos = Handler_GetExistFrontPokePos(a2->serverFlow, (int)a2->attacker->ID);
@@ -2080,22 +2141,16 @@ extern "C"
         for (k = 0; k < pokeCount; (k + 1))
         {
             int i = 0;
-            int MoveCount = BattleMon_GetMoveCount(a2->defender);
+            defender = Handler_GetBattleMon(a2->serverFlow, opposingPokePos[k]);
+            int MoveCount = BattleMon_GetMoveCount(defender);
             // int currentHp = BattleMon_GetValue(a2->attacker, VALUE_CURRENT_HP);
-            int currentHp = DivideMaxHPZeroCheck(a2->attacker, 4u);
+            int currentHp = DivideMaxHPZeroCheck(a2->attacker, 3u);
             do
             {
                 int damage = Handler_SimulationDamage(a2->serverFlow,
-                                                      BattleMon_GetID(a2->defender),
+                                                      BattleMon_GetID(defender),
                                                       BattleMon_GetID(a2->attacker),
-                                                      Move_GetID(a2->defender, i));
-
-                // If the target is faster the the Pokemon using the set up move, doubles the damage
-                // now checking for a 2HKO
-                if (Handler_CalculateSpeed(a2->serverFlow, a2->defender, 1) > Handler_CalculateSpeed(a2->serverFlow, a2->attacker, 1))
-                {
-                    damage *= 2;
-                }
+                                                      Move_GetID(defender, i), false, false);
 
                 // If currentHP is less than or equal to damage, performs the jump
                 if (AIConditionalJump(a1, 6, currentHp, damage))
@@ -2112,7 +2167,7 @@ extern "C"
     }
 
     // USED FOR DEBUFFING MOVES
-    int THUMB_BRANCH_A1062_Nop(void *a1, TrainerAIEnv *a2)
+    int THUMB_BRANCH_AI062_Nop(void *a1, TrainerAIEnv *a2)
     {
         int i = 0;
         int MoveCount = BattleMon_GetMoveCount(a2->defender);
@@ -2124,14 +2179,7 @@ extern "C"
             int damage = Handler_SimulationDamage(a2->serverFlow,
                                                   BattleMon_GetID(a2->defender),
                                                   BattleMon_GetID(a2->attacker),
-                                                  Move_GetID(a2->defender, i));
-
-            // If the target is faster the the Pokemon using the set up move, doubles the damage
-            // now checking for a 2HKO
-            if (Handler_CalculateSpeed(a2->serverFlow, a2->defender, 1) > Handler_CalculateSpeed(a2->serverFlow, a2->attacker, 1))
-            {
-                damage *= 2;
-            }
+                                                  Move_GetID(a2->defender, i), false, false);
 
             // If currentHP is less than or equal to damage, performs the jump
             if (AIConditionalJump(a1, 6, currentHp, damage))
@@ -2146,8 +2194,42 @@ extern "C"
         return a2->result;
     }
 
-    int THUMB_BRANCH_A1063_Nop(void *a1, TrainerAIEnv *a2)
+    // checks if the remaining sleep turns is greater than 1
+    int THUMB_BRANCH_AI102_Nop(void *a1, TrainerAIEnv *a2)
     {
+        BattleMon *attacker;
+        attacker = a2->attacker;
+        if (BattleMon_CheckIfMoveCondition(attacker, CONDITION_SLEEP))
+        {
+            // checks that param 3 is less than param 4
+            AIConditionalJump(a1, 0, attacker->MoveConditionCounter[CONDITION_SLEEP] + 1, Condition_GetTurnMax(&attacker->Conditions[CONDITION_SLEEP]));
+        }
+        return a2->result;
+    }
+
+
+    // Implemented
+    int THUMB_BRANCH_AI103_Nop(void *a1, TrainerAIEnv *a2)
+    {
+        __int16 ExistFrontPokePos; // r0
+        unsigned int pokeCount;
+        u8 opposingPokePos[5];
+        BattleMon *defender;
+        unsigned int k;
+
+        ExistFrontPokePos = Handler_GetExistFrontPokePos(a2->serverFlow, (int)a2->attacker->ID);
+        pokeCount = Handler_ExpandPokeID(a2->serverFlow, ExistFrontPokePos | 0x100, opposingPokePos);
+
+        for (k = 0; k < pokeCount; (k + 1))
+        {
+            int i = 0;
+            defender = Handler_GetBattleMon(a2->serverFlow, opposingPokePos[k]);
+
+            if (Handler_CalculateSpeed(a2->serverFlow, defender, 1) > Handler_CalculateSpeed(a2->serverFlow, a2->attacker, 1))
+            {
+                AIConditionalJump(a1, 0, 1, 2);
+            }
+        }
         return a2->result;
     }
 }

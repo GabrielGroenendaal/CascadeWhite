@@ -4,16 +4,14 @@
 extern "C"
 {
 
-
-    void THUMB_BRANCH_copyTrainerName(wchar_t *pDest, wchar_t *pSrc){
+    void THUMB_BRANCH_copyTrainerName(wchar_t *pDest, wchar_t *pSrc)
+    {
         wcharsncpy(pSrc, pDest, 8);
     }
 
     // void THUMB_BRANCH_ARM9_02008B74(wchar_t *pDest, wchar_t *pSrc){
     //     wcharsncpy(pSrc, pDest, 8);
     // }
-
-
 
     bool PersonalCheckIfMoveCondition(BattleMon *a1, MoveCondition a2)
     {
@@ -101,6 +99,8 @@ extern "C"
                 a1 == IT0043_BERRY_JUICE ||
                 (a1 >= IT0545_ABSORB_BULB && a1 <= IT0564_NORMAL_GEM) ||
                 a1 == IT0292_CLRS_BOOSTER ||
+                a1 == IT0254_PROTO_ARMOR ||
+                a1 == IT0286_CLRS_ARMOR ||
                 a1 == IT0291_WEAKNESS_POLICY ||
                 a1 == IT0274_MYSTERY_DEVICE ||
                 a1 == IT0542_RED_CARD ||
@@ -190,10 +190,10 @@ extern "C"
 
     void THUMB_BRANCH_HandlerAftermath(int a1, ServerFlow *a2, unsigned int *a3)
     {
-        BattleMon *aftermathMon;    // r0
+        BattleMon *aftermathMon;  // r0
         unsigned __int16 Value;   // r0
         int v7;                   // r6
-        BattleMon *explodedMon;    // r7
+        BattleMon *explodedMon;   // r7
         HandlerParam_Damage *v9;  // r4
         __int16 ExistAdjacentPos; // [sp+0h] [bp-18h]
         u8 adjacentPos[5];
@@ -205,7 +205,7 @@ extern "C"
             aftermathMon = Handler_GetBattleMon(a2, (int)a3);
             if (BattleMon_IsFainted(aftermathMon))
             {
-                
+
                 HandlerParam_AddAnimation *addAnimation = (HandlerParam_AddAnimation *)BattleHandler_PushWork(a2, EFFECT_ADD_ANIMATION, (int)a3);
                 addAnimation->header.flags |= 0x800000u;
                 addAnimation->animNo = MOVE153_EXPLOSION;
@@ -1018,51 +1018,46 @@ extern "C"
 
     int HandlerNewHealer(int a1, ServerFlow *a2, unsigned int a3, int a4)
     {
-        int result;                 // r0
+
+        int NumTargets;             // r0
         __int16 v7;                 // r0
-        unsigned int i;             // r4
-        int v9;                     // r1
+        unsigned int currentTarget; // r4
+        int currentTargetPosition;  // r1
         BattleMon *BattleMon;       // r0
         HandlerParam_RecoverHP *v6; // r5
-        unsigned int v12;           // [sp+0h] [bp-20h]
-        u8 v13[5];                // [sp+4h] [bp-1Ch] BYREF
+        u8 v13[5];                  // [sp+4h] [bp-1Ch] BYREF
         int v14;                    // [sp+8h] [bp-18h]
-        int Displayed;
 
+        NumTargets = BattleEventVar_GetValue(VAR_MON_ID);
         v14 = a4;
-        result = BattleEventVar_GetValue(VAR_MON_ID);
-        if (a3 == result)
+        if (a3 == NumTargets)
         {
-            v7 = Handler_PokeIDToPokePos(a2, a3);
-            result = Handler_ExpandPokeID(a2, v7 | 0x400, v13);
-            v12 = result;
-            for (i = 0; i < v12; result = v12)
+            BattleMon = Handler_GetBattleMon(a2, BattleEventVar_GetValue(VAR_MON_ID));
+            if (!BattleMon_IsFullHP(BattleMon))
             {
-                v9 = v13[i];
-
-                BattleMon = Handler_GetBattleMon(a2, v9);
-
+                BattleHandler_PushRun(a2, EFFECT_ABILITYPOPUPIN, a3);
+                v6 = (HandlerParam_RecoverHP *)BattleHandler_PushWork(a2, EFFECT_RECOVERHP, currentTargetPosition);
+                v6->pokeID = currentTargetPosition;
+                v6->recoverHP = DivideMaxHPZeroCheck(BattleMon, 0x10u);
+                BattleHandler_PopWork(a2, v6);
+                BattleHandler_PushRun(a2, EFFECT_ABILITYPOPUPOUT, a3);
+            }
+            v7 = Handler_PokeIDToPokePos(a2, a3);
+            NumTargets = Handler_ExpandPokeID(a2, v7 | 0x700, v13);
+            for (currentTarget = 0; currentTarget < NumTargets; currentTarget++)
+            {
+                currentTargetPosition = v13[currentTarget];
+                BattleMon = Handler_GetBattleMon(a2, currentTargetPosition);
                 if (!BattleMon_IsFullHP(BattleMon))
                 {
-                    if (!Displayed)
-                    {
-                        BattleHandler_PushRun(a2, EFFECT_ABILITYPOPUPIN, a3);
-                    }
-                    v6 = (HandlerParam_RecoverHP *)BattleHandler_PushWork(a2, EFFECT_RECOVERHP, v9);
-                    v6->pokeID = BattleEventVar_GetValue(VAR_MON_ID);
+                    v6 = (HandlerParam_RecoverHP *)BattleHandler_PushWork(a2, EFFECT_RECOVERHP, currentTargetPosition);
+                    v6->pokeID = currentTargetPosition;
                     v6->recoverHP = DivideMaxHPZeroCheck(BattleMon, 0x10u);
                     BattleHandler_PopWork(a2, v6);
-                    if (!Displayed)
-                    {
-                        BattleHandler_PushRun(a2, EFFECT_ABILITYPOPUPOUT, a3);
-                        Displayed = 1;
-                    }
                 }
-
-                i = (i + 1);
             }
         }
-        return result;
+        return NumTargets;
     }
 
     typedef struct
@@ -1650,8 +1645,9 @@ extern "C"
 
     void HandlerWindRiderTailwind(int a1, ServerFlow *a2, int a3)
     {
-        //HandlerParam_Message *v9;
-        if ((BattleEventVar_GetValue(VAR_MON_ID) == a3 || MainModule_IsAllyMonID(a3, BattleEventVar_GetValue(VAR_MON_ID))) && BattleEventVar_GetValue(VAR_MOVE_ID) == MOVE366_TAILWIND){
+        // HandlerParam_Message *v9;
+        if ((BattleEventVar_GetValue(VAR_MON_ID) == a3 || MainModule_IsAllyMonID(a3, BattleEventVar_GetValue(VAR_MON_ID))) && BattleEventVar_GetValue(VAR_MOVE_ID) == MOVE366_TAILWIND)
+        {
             CommonTypeNoEffectRankUp(a2, a3, STATSTAGE_ATTACK, 1);
         }
         // if (a3 == BattleEventVar_GetValue(VAR_DEFENDING_MON) && a3 != BattleEventVar_GetValue(VAR_ATTACKING_MON))
@@ -1678,8 +1674,7 @@ extern "C"
     }
     ABILITY_TRIGGERTABLE WindRiderHandlers[] = {
         {EVENT_ABILITY_CHECK_NO_EFFECT, (ABILITY_HANDLER_FUNC)HandlerWindRider}, // 22
-        {EVENT_MOVE_EXECUTE_END, (ABILITY_HANDLER_FUNC)HandlerWindRiderTailwind}
-    };
+        {EVENT_MOVE_EXECUTE_END, (ABILITY_HANDLER_FUNC)HandlerWindRiderTailwind}};
 
     ABILITY_TRIGGERTABLE *THUMB_BRANCH_EventAddKeenEye(_DWORD *a1)
     {
@@ -1911,7 +1906,7 @@ extern "C"
         unsigned int NumTargets;   // r6
         unsigned int v10;          // r4
         BattleMon *BattleMon;      // r0
-        u8 v12[5];                   // [sp+0h] [bp-18h] BYREF
+        u8 v12[5];                 // [sp+0h] [bp-18h] BYREF
 
         *v12 = a4;
         Value = BattleEventVar_GetValue(VAR_MON_ID);

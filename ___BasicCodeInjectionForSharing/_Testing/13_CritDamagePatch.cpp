@@ -1542,13 +1542,12 @@ extern "C"
         unsigned int v8;      // r4
         int ID;               // r0
         int moveID;
-        //ServerFlow *v10;                  // r6
-        int v11;                          // r1
-        //ServerFlow *v14;                  // [sp+4h] [bp-44h]
+        // ServerFlow *v10;                  // r6
+        int v11; // r1
+        // ServerFlow *v14;                  // [sp+4h] [bp-44h]
         ActionOrderWork *ActionOrderWork; // [sp+8h] [bp-40h]
         char *p_actionOrderIndex;         // [sp+20h] [bp-28h]
 
-       
         v3 = 0;
         if (a1->actionOrderIndex)
         {
@@ -1559,13 +1558,13 @@ extern "C"
                 v4 = v3;
                 BattleMon = a1->actionOrderWork[v4].BattleMon;
 
-                //k::Printf("\nThis is a quick test to see if we are successfully catching a Battlemon\nv3 is %d, v4 is %d\nThis battlemon's id is %d, its species is %d, and its attack stat is %d\n",
-                 //         v3, v4, BattleMon_GetID(BattleMon), BattleMon->Species, BattleMon->Attack);
+                // k::Printf("\nThis is a quick test to see if we are successfully catching a Battlemon\nv3 is %d, v4 is %d\nThis battlemon's id is %d, its species is %d, and its attack stat is %d\n",
+                //          v3, v4, BattleMon_GetID(BattleMon), BattleMon->Species, BattleMon->Attack);
 
                 if (BattleMon != a2 && !a1->actionOrderWork[v4].fDone)
                 {
                     v6 = (((u32)ActionOrderWork[v4].Action) & 0xF) == 1 ? (((u32)ActionOrderWork[v4].Action) >> 7) : 0;
-               
+
                     if (v6 == 228)
                     {
                         moveID = v6;
@@ -1577,15 +1576,16 @@ extern "C"
                     }
                     else if (v6 == 467 || v6 == 291 || v6 == 19 || v6 == 91 || v6 == 340)
                     {
-                      
+
                         if ((BattleMon_GetConditionFlag(a1->actionOrderWork[v4].BattleMon, CONDITIONFLAG_SHADOW_FORCE) ||
-                            BattleMon_GetConditionFlag(a1->actionOrderWork[v4].BattleMon, CONDITIONFLAG_DIG) ||
-                            BattleMon_GetConditionFlag(a1->actionOrderWork[v4].BattleMon, CONDITIONFLAG_DIVE) ||
-                            BattleMon_GetConditionFlag(a1->actionOrderWork[v4].BattleMon, CONDITIONFLAG_FLY)) || a1->actionOrderWork[v8].BattleMon->HeldItem == 271)
+                             BattleMon_GetConditionFlag(a1->actionOrderWork[v4].BattleMon, CONDITIONFLAG_DIG) ||
+                             BattleMon_GetConditionFlag(a1->actionOrderWork[v4].BattleMon, CONDITIONFLAG_DIVE) ||
+                             BattleMon_GetConditionFlag(a1->actionOrderWork[v4].BattleMon, CONDITIONFLAG_FLY)) ||
+                            a1->actionOrderWork[v8].BattleMon->HeldItem == 271)
                         {
                             moveID = v6;
                             Value = BattleMon_GetValue(BattleMon, VALUE_SPEED_STAT);
-               
+
                             if (MoveEvent_AddItem(a1->actionOrderWork[v4].BattleMon, moveID, Value))
                             {
                                 a1->actionOrderWork[v4].InterruptActive = 1;
@@ -1618,7 +1618,7 @@ extern "C"
                     {
                         v11 = 0;
                     }
- 
+
                     if (v11 == 228)
                     {
                         MoveEvent_ForceRemoveItemFromBattleMon(a1->actionOrderWork[v8].BattleMon, v11);
@@ -1626,15 +1626,15 @@ extern "C"
 
                     else if (v11 == 467 || v11 == 291 || v11 == 19 || v11 == 91 || v11 == 340)
                     {
-        
+
                         if ((BattleMon_GetConditionFlag(a1->actionOrderWork[v8].BattleMon, CONDITIONFLAG_SHADOW_FORCE) ||
-                            BattleMon_GetConditionFlag(a1->actionOrderWork[v8].BattleMon, CONDITIONFLAG_DIG) ||
-                            BattleMon_GetConditionFlag(a1->actionOrderWork[v8].BattleMon, CONDITIONFLAG_DIVE) ||
-                            BattleMon_GetConditionFlag(a1->actionOrderWork[v8].BattleMon, CONDITIONFLAG_FLY)) || a1->actionOrderWork[v8].BattleMon->HeldItem == 271)
+                             BattleMon_GetConditionFlag(a1->actionOrderWork[v8].BattleMon, CONDITIONFLAG_DIG) ||
+                             BattleMon_GetConditionFlag(a1->actionOrderWork[v8].BattleMon, CONDITIONFLAG_DIVE) ||
+                             BattleMon_GetConditionFlag(a1->actionOrderWork[v8].BattleMon, CONDITIONFLAG_FLY)) ||
+                            a1->actionOrderWork[v8].BattleMon->HeldItem == 271)
                         {
-                           
+
                             MoveEvent_ForceRemoveItemFromBattleMon(a1->actionOrderWork[v8].BattleMon, v11);
-                 
                         }
                     }
                     a1->actionOrderWork[v8].InterruptActive = 0;
@@ -1643,5 +1643,289 @@ extern "C"
             } while (v8 < a1->actionOrderIndex);
         }
         return a1->SwitchOutInterruptingMonCount;
+    }
+    enum PkmField
+    {
+        PF_PID = 0x0,
+        PF_Species = 0x5,
+        PF_Item = 0x6,
+        PF_IdSet = 0x7,
+        PF_Experience = 0x8,
+        PF_Happiness = 0x9,
+        PF_Ability = 0xA,
+        PF_Markings = 0xB,
+        PF_Region = 0xC,
+        PF_EvHP = 0xD,
+        PF_EvATK = 0xE,
+        PF_EvDEF = 0xF,
+        PF_EvSPE = 0x10,
+        PF_EvSPA = 0x11,
+        PF_EvSPD = 0x12,
+        PF_ContestCool = 0x13,
+        PF_ContestBeauty = 0x14,
+        PF_ContestCute = 0x15,
+        PF_ContestSmart = 0x16,
+        PF_ContestTough = 0x17,
+        PF_ContestSheen = 0x18,
+        PF_RibbonChampionSinnoh = 0x19,
+        PF_RibbonAbility = 0x1A,
+        PF_RibbonAbilityGreat = 0x1B,
+        PF_RibbonAbilityDouble = 0x1C,
+        PF_RibbonAbilityMulti = 0x1D,
+        PF_RibbonAbilityPair = 0x1E,
+        PF_RibbonAbilityWorld = 0x1F,
+        PF_RibbonAlert = 0x20,
+        PF_RibbonShock = 0x21,
+        PF_RibbonDowncast = 0x22,
+        PF_RibbonCareless = 0x23,
+        PF_RibbonRelax = 0x24,
+        PF_RibbonSnooze = 0x25,
+        PF_RibbonSmile = 0x26,
+        PF_RibbonGorgeous = 0x27,
+        PF_RibbonRoyal = 0x28,
+        PF_RibbonGorgeousRoyal = 0x29,
+        PF_RibbonFootprint = 0x2A,
+        PF_RibbonRecord = 0x2B,
+        PF_RibbonEvent = 0x2C,
+        PF_RibbonLegend = 0x2D,
+        PF_RibbonChampionWorld = 0x2E,
+        PF_RibbonBirthday = 0x2F,
+        PF_RibbonSpecial = 0x30,
+        PF_RibbonSouvenir = 0x31,
+        PF_RibbonWishing = 0x32,
+        PF_RibbonClassic = 0x33,
+        PF_RibbonPremier = 0x34,
+        PF_Ribbon0x35 = 0x35,
+        PF_Move1 = 0x36,
+        PF_Move2 = 0x37,
+        PF_Move3 = 0x38,
+        PF_Move4 = 0x39,
+        PF_Move1PP = 0x3A,
+        PF_Move2PP = 0x3B,
+        PF_Move3PP = 0x3C,
+        PF_Move4PP = 0x3D,
+        PF_Move1PPUp = 0x3E,
+        PF_Move2PPUp = 0x3F,
+        PF_Move3PPUp = 0x40,
+        PF_Move4PPUp = 0x41,
+        PF_Move1PPMax = 0x42,
+        PF_Move2PPMax = 0x43,
+        PF_Move3PPMax = 0x44,
+        PF_Move4PPMax = 0x45,
+        PF_IvHP = 0x46,
+        PF_IvATK = 0x47,
+        PF_IvDEF = 0x48,
+        PF_IvSPE = 0x49,
+        PF_IvSPA = 0x4A,
+        PF_IvSPD = 0x4B,
+        PF_IsEgg = 0x4C,
+        PF_RibbonG3Cool = 0x4D,
+        PF_RibbonG3CoolSuper = 0x4E,
+        PF_RibbonG3CoolHyper = 0x4F,
+        PF_RibbonG3CoolMaster = 0x50,
+        PF_RibbonG3Beauty = 0x51,
+        PF_RibbonG3BeautySuper = 0x52,
+        PF_RibbonG3BeautyHyper = 0x53,
+        PF_RibbonG3BeautyMaster = 0x54,
+        PF_RibbonG3Cute = 0x55,
+        PF_RibbonG3CuteSuper = 0x56,
+        PF_RibbonG3CuteHyper = 0x57,
+        PF_RibbonG3CuteMaster = 0x58,
+        PF_RibbonG3Smart = 0x59,
+        PF_RibbonG3SmartSuper = 0x5A,
+        PF_RibbonG3SmartHyper = 0x5B,
+        PF_RibbonG3SmartMaster = 0x5C,
+        PF_RibbonG3Tough = 0x5D,
+        PF_RibbonG3ToughSuper = 0x5E,
+        PF_RibbonG3ToughHyper = 0x5F,
+        PF_RibbonG3ToughMaster = 0x60,
+        PF_RibbonChampionHoenn = 0x61,
+        PF_RibbonWinning = 0x62,
+        PF_RibbonVictory = 0x63,
+        PF_RibbonArtist = 0x64,
+        PF_RibbonEffort = 0x65,
+        PF_RibbonChampionBattle = 0x66,
+        PF_RibbonChampionRegional = 0x67,
+        PF_RibbonChampionNational = 0x68,
+        PF_RibbonCountry = 0x69,
+        PF_RibbonNational = 0x6A,
+        PF_RibbonEarth = 0x6B,
+        PF_RibbonWorld = 0x6C,
+        PF_FatefulEncounter = 0x6D,
+        PF_Sex = 0x6E,
+        PF_Forme = 0x6F,
+        PF_Nature = 0x70,
+        PF_IsHiddenAbility = 0x71,
+        PF_NicknameStrBuf = 0x73,
+        PF_NicknameRaw = 0x74,
+        PF_HasNickname = 0x75,
+        PF_MetGameVersion = 0x77,
+        PF_RibbonG4Cool = 0x78,
+        PF_RibbonG4CoolGreat = 0x79,
+        PF_RibbonG4CoolUltra = 0x7A,
+        PF_RibbonG4CoolMaster = 0x7B,
+        PF_RibbonG4Beauty = 0x7C,
+        PF_RibbonG4BeautyGreat = 0x7D,
+        PF_RibbonG4BeautyUltra = 0x7E,
+        PF_RibbonG4BeautyMaster = 0x7F,
+        PF_RibbonG4Cute = 0x80,
+        PF_RibbonG4CuteGreat = 0x81,
+        PF_RibbonG4CuteUltra = 0x82,
+        PF_RibbonG4CuteMaster = 0x83,
+        PF_RibbonG4Smart = 0x84,
+        PF_RibbonG4SmartGreat = 0x85,
+        PF_RibbonG4SmartUltra = 0x86,
+        PF_RibbonG4SmartMaster = 0x87,
+        PF_RibbonG4Tough = 0x88,
+        PF_RibbonG4ToughGreat = 0x89,
+        PF_RibbonG4ToughUltra = 0x8A,
+        PF_RibbonG4ToughMaster = 0x8B,
+        PF_Ribbon0x8C = 0x8C,
+        PF_OTNameStrBuf = 0x8D,
+        PF_OTNameRaw = 0x8E,
+        PF_HatchDateYear = 0x8F,
+        PF_HatchDateMonth = 0x90,
+        PF_HatchDateDay = 0x91,
+        PF_MetYear = 0x92,
+        PF_MetMonth = 0x93,
+        PF_MetDay = 0x94,
+        PF_HatchLocation = 0x95,
+        PF_MetLocation = 0x96,
+        PF_Pokerus = 0x97,
+        PF_Pokeball = 0x98,
+        PF_MetLevel = 0x99,
+        PF_TrGender = 0x9A,
+        PF_GroundTile = 0x9B,
+        PF_StatusCond = 0x9D,
+        PF_Level = 0x9E,
+        PF_NowHP = 0xA0,
+        PF_MaxHP = 0xA1,
+        PF_ATK = 0xA2,
+        PF_DEF = 0xA3,
+        PF_SPE = 0xA4,
+        PF_SPA = 0xA5,
+        PF_SPD = 0xA6,
+        PF_Mail = 0xA7,
+        PF_IsSpeciesValid = 0xA9,
+        PF_LegalSpecies = 0xAB,
+        PF_IVsAll = 0xAC,
+        PF_IsNotNidoran = 0xAD,
+        PF_Type1 = 0xAE,
+        PF_Type2 = 0xAF,
+        PF_NicknameStrBufKeepFlags = 0xB0,
+        PF_NicknameRawKeepFlags = 0xB1,
+        PF_NPokemon = 0xB2,
+        PF_PokestarFame = 0xB3,
+    };
+    enum PersonalField
+    {
+        Personal_HP = 0x0,
+        Personal_ATK = 0x1,
+        Personal_DEF = 0x2,
+        Personal_SPE = 0x3,
+        Personal_SPA = 0x4,
+        Personal_SPD = 0x5,
+        Personal_Type1 = 0x6,
+        Personal_Type2 = 0x7,
+        Personal_CaptureRate = 0x8,
+        Personal_BaseEXP = 0x9,
+        Personal_EvHP = 0xA,
+        Personal_EvATK = 0xB,
+        Personal_EvDEF = 0xC,
+        Personal_EvSPE = 0xD,
+        Personal_EvSPA = 0xE,
+        Personal_EvSPD = 0xF,
+        Personal_Telekinesis = 0x10,
+        Personal_WildItem50 = 0x11,
+        Personal_WildItem5 = 0x12,
+        Personal_WildItem1 = 0x13,
+        Personal_GenderProb = 0x14,
+        Personal_EggHappiness = 0x15,
+        Personal_BaseHappiness = 0x16,
+        Personal_GrowthRate = 0x17,
+        Personal_EggGroup1 = 0x18,
+        Personal_EggGroup2 = 0x19,
+        Personal_Abil1 = 0x1A,
+        Personal_Abil2 = 0x1B,
+        Personal_AbilH = 0x1C,
+        Personal_EscapeRate = 0x1D,
+        Personal_FormeDataOffs = 0x1E,
+        Personal_FormeSpritesOffset = 0x1F,
+        Personal_FormeCount = 0x20,
+        Personal_Color = 0x21,
+        Personal_SpriteFlip = 0x22,
+        Personal_SpriteForme = 0x23,
+        Personal_EvoStage = 0x24,
+        Personal_Height = 0x25,
+        Personal_Weight = 0x26,
+        Personal_TMHM1 = 0x27,
+        Personal_TMHM2 = 0x28,
+        Personal_TMHM3 = 0x29,
+        Personal_TMHM4 = 0x2A,
+        Personal_TypeTutor = 0x2B,
+        Personal_SpecialTutor1 = 0x2C,
+        Personal_SpecialTutor2 = 0x2D,
+        Personal_SpecialTutor3 = 0x2E,
+        Personal_SpecialTutor4 = 0x2F,
+    };
+    extern u32 PokeParty_GetParam(PartyPkm *pPkm, PkmField field, void *extra);
+    extern void PokeParty_SetParam(PartyPkm *pPkm, PkmField field, u32 data);
+    extern void PokeParty_SetHiddenAbil(PartyPkm *pPkm, u16 species, u16 forme);
+    extern u32 PML_PersonalGetParamSingle(u16 species, u16 form, PersonalField field);
+    extern void PokeParty_SetNature(PartyPkm *pkm, u8 nature);
+
+    void THUMB_BRANCH_TrainerUtil_SetupPkm(u16 trId, PartyPkm *pkm, u16 forme, u8 genderAndAbil)
+    {
+        u32 v5;           // r7
+        int v6;           // r4
+        PersonalField v7; // r6
+        u32 ParamSingle;  // r0
+        u8 v9;            // r1
+        u32 data;         // [sp+0h] [bp-20h]
+        u16 species;      // [sp+8h] [bp-18h]
+        u32 movePP;
+        data = forme;
+        v5 = 255;
+        v6 = 0;
+        species = PokeParty_GetParam(pkm, PF_Species, 0);
+        
+        do
+        {
+            if (PokeParty_GetParam(pkm, (PkmField)(v6 + 54), 0) == 218)
+            {
+                v5 = 0;
+            }
+            // Checks if the move has 5 or less PP, if it does, sets the PP to 5
+            movePP = PokeParty_GetParam(pkm, (PkmField)(v6 + 58), 0);
+            if (movePP < 5)
+            {
+                PokeParty_SetParam(pkm, (PkmField)(v6 + 58), 5);
+            }
+            else
+            {
+                movePP += ((movePP / 5) * 3);
+                PokeParty_SetParam(pkm, (PkmField)(v6 + 58), movePP);
+            }
+            ++v6;
+        } while (v6 < 4);
+
+        PokeParty_SetParam(pkm, PF_Happiness, v5);
+        PokeParty_SetParam(pkm, PF_Forme, data);
+        if ((genderAndAbil & 0xF0) == 48)
+        {
+            PokeParty_SetHiddenAbil(pkm, species, data);
+        }
+        else if ((genderAndAbil & 0xF0) != 0)
+        {
+            v7 = Personal_Abil1;
+            if (PML_PersonalGetParamSingle(species, data, Personal_Abil2) && (genderAndAbil & 0xF0) == 32)
+            {
+                v7 = Personal_Abil2;
+            }
+            ParamSingle = PML_PersonalGetParamSingle(species, data, v7);
+            PokeParty_SetParam(pkm, PF_Ability, ParamSingle);
+        }
+        PokeParty_GetParam(pkm, PF_PID, 0);
+        PokeParty_SetNature(pkm, v9);
     }
 }

@@ -713,22 +713,13 @@ extern "C"
 
     void HandlerHowlIncreaseStats(int a1, ServerFlow *a2, unsigned int a3)
     {
-
-        int v7;
         HandlerParam_ChangeStatStage *atkBoost;
         HandlerParam_ChangeStatStage *spABoost;
         HandlerParam_Message *message;
-        v7 = BattleEventVar_GetValue(VAR_MON_ID);
-
-        if (a3 == v7 || MainModule_IsAllyMonID(a3, v7))
+        int i;
+        i = 0;
+        if ((int)a3 == BattleEventVar_GetValue(VAR_ATTACKING_MON))
         {
-            if (a3 != v7)
-            {
-                message = (HandlerParam_Message *)BattleHandler_PushWork(a2, EFFECT_MESSAGE, a3);
-                BattleHandler_StrSetup(&message->str, 2u, 1231);
-                BattleHandler_AddArg(&message->str, a3);
-                BattleHandler_PopWork(a2, message);
-            }
             atkBoost = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, a3);
             atkBoost->poke_cnt = 1;
             atkBoost->pokeID[0] = a3;
@@ -736,7 +727,6 @@ extern "C"
             atkBoost->rankVolume = 1;
             atkBoost->fMoveAnimation = 1;
             BattleHandler_PopWork(a2, atkBoost);
-
             spABoost = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, a3);
             spABoost->poke_cnt = 1;
             spABoost->pokeID[0] = a3;
@@ -744,6 +734,36 @@ extern "C"
             spABoost->rankVolume = 1;
             spABoost->fMoveAnimation = 1;
             BattleHandler_PopWork(a2, spABoost);
+            u8 *TempWork;              // r4
+            unsigned int NumTargets;   // r5
+            __int16 ExistFrontPokePos; // [sp+0h] [bp-18h]
+
+            ExistFrontPokePos = Handler_PokeIDToPokePos(a2, a3);
+            TempWork = Handler_GetTempWork(a2);
+
+            NumTargets = Handler_ExpandPokeID(a2, ExistFrontPokePos | 0x400, TempWork);
+            while (i < NumTargets)
+            {
+                message = (HandlerParam_Message *)BattleHandler_PushWork(a2, EFFECT_MESSAGE, a3);
+                BattleHandler_StrSetup(&message->str, 2u, 1231);
+                BattleHandler_AddArg(&message->str, TempWork[i]);
+                BattleHandler_PopWork(a2, message);
+                atkBoost = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, a3);
+                atkBoost->poke_cnt = 1;
+                atkBoost->pokeID[0] = TempWork[i];
+                atkBoost->rankType = STATSTAGE_ATTACK;
+                atkBoost->rankVolume = 1;
+                atkBoost->fMoveAnimation = 1;
+                BattleHandler_PopWork(a2, atkBoost);
+                spABoost = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, a3);
+                spABoost->poke_cnt = 1;
+                spABoost->pokeID[0] = TempWork[i];
+                spABoost->rankType = STATSTAGE_SPECIAL_ATTACK;
+                spABoost->rankVolume = 1;
+                spABoost->fMoveAnimation = 1;
+                BattleHandler_PopWork(a2, spABoost);
+                i++;
+            }
         }
     }
 

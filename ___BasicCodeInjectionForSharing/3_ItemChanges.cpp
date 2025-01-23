@@ -675,6 +675,12 @@ extern "C"
 
         if ((int)a3 == BattleEventVar_GetValue(VAR_MON_ID))
         {
+            v8 = (HandlerParam_Message *)BattleHandler_PushWork(a2, EFFECT_MESSAGE, (int)a3);
+            BattleHandler_StrSetup(&v8->str, 2u, 1192);
+            BattleHandler_AddArg(&v8->str, (int)a3);
+            BattleHandler_AddArg(&v8->str, BattleEventItem_GetSubID((BattleEventItem *)a1));
+            BattleHandler_PopWork(a2, v8);
+
             v5 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
             v5->poke_cnt = 1;
             v5->pokeID[0] = (int)a3;
@@ -724,7 +730,7 @@ extern "C"
             BattleHandler_StrSetup(&v8->str, 2u, 1192);
             BattleHandler_AddArg(&v8->str, (int)a3);
             BattleHandler_AddArg(&v8->str, BattleEventItem_GetSubID((BattleEventItem *)a1));
-            BattleHandler_PopWork(a2, v7);
+            BattleHandler_PopWork(a2, v8);
 
             v5 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
             v5->poke_cnt = 1;
@@ -765,6 +771,12 @@ extern "C"
 
         if ((int)a3 == BattleEventVar_GetValue(VAR_MON_ID))
         {
+            v8 = (HandlerParam_Message *)BattleHandler_PushWork(a2, EFFECT_MESSAGE, (int)a3);
+            BattleHandler_StrSetup(&v8->str, 2u, 1192);
+            BattleHandler_AddArg(&v8->str, (int)a3);
+            BattleHandler_AddArg(&v8->str, BattleEventItem_GetSubID((BattleEventItem *)a1));
+            BattleHandler_PopWork(a2, v8);
+            
             v5 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
             v5->poke_cnt = 1;
             v5->pokeID[0] = (int)a3;
@@ -814,7 +826,7 @@ extern "C"
             BattleHandler_StrSetup(&v8->str, 2u, 1192);
             BattleHandler_AddArg(&v8->str, (int)a3);
             BattleHandler_AddArg(&v8->str, BattleEventItem_GetSubID((BattleEventItem *)a1));
-            BattleHandler_PopWork(a2, v7);
+            BattleHandler_PopWork(a2, v8);
 
             v5 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
             v5->poke_cnt = 1;
@@ -861,7 +873,7 @@ extern "C"
             BattleHandler_StrSetup(&v8->str, 2u, 1192);
             BattleHandler_AddArg(&v8->str, (int)a3);
             BattleHandler_AddArg(&v8->str, BattleEventItem_GetSubID((BattleEventItem *)a1));
-            BattleHandler_PopWork(a2, v7);
+            BattleHandler_PopWork(a2, v8);
 
             v5 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
             v5->poke_cnt = 1;
@@ -906,7 +918,7 @@ extern "C"
             BattleHandler_StrSetup(&v8->str, 2u, 1192);
             BattleHandler_AddArg(&v8->str, (int)a3);
             BattleHandler_AddArg(&v8->str, BattleEventItem_GetSubID((BattleEventItem *)a1));
-            BattleHandler_PopWork(a2, v7);
+            BattleHandler_PopWork(a2, v8);
 
             v5 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
             v5->poke_cnt = 1;
@@ -949,7 +961,7 @@ extern "C"
             BattleHandler_StrSetup(&v11->str, 2u, 1192);
             BattleHandler_AddArg(&v11->str, (int)a3);
             BattleHandler_AddArg(&v11->str, BattleEventItem_GetSubID((BattleEventItem *)a1));
-            BattleHandler_PopWork(a2, v10);
+            BattleHandler_PopWork(a2, v11);
 
             v5 = (HandlerParam_ChangeStatStage *)BattleHandler_PushWork(a2, EFFECT_CHANGESTATSTAGE, (int)a3);
             v5->poke_cnt = 1;
@@ -1135,8 +1147,10 @@ extern "C"
     //
     void HandlerSmoothRock(BattleEventItem *a1, ServerFlow *a2, int a3)
     {
+        k::Printf("\nWe got this far");
         if (a3 == BattleEventVar_GetValue(VAR_MON_ID) && ServerEvent_GetWeather(a2) != WEATHER_SAND)
         {
+            k::Printf("\nWe are now this far");
             ItemEvent_PushRun(a1, a2, a3);
         }
     }
@@ -1147,6 +1161,7 @@ extern "C"
 
         if (a3 == BattleEventVar_GetValue(VAR_MON_ID))
         {
+            k::Printf("\nWe made it into this function\n");
             v6 = (HandlerParam_ChangeWeather *)BattleHandler_PushWork(a2, EFFECT_CHANGE_WEATHER, a3);
             v6->weather = WEATHER_SAND;
             v6->turnCount = -1;
@@ -1219,14 +1234,13 @@ extern "C"
 
     ITEM_TRIGGERTABLE SmoothRockHandlers[] = {
         {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerSmoothRock},             // 24
-        {EVENT_AFTER_ITEM_EQUIP, (ITEM_HANDLER_FUNC)HandlerSmoothRock},      // 24
         {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerSmoothRockUse},           // 24
         {EVENT_WEATHER_REACTION, (ITEM_HANDLER_FUNC)HandlerSandVeilWeather}, // 24
     };
 
     ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddSmoothRock(_DWORD *a1)
     {
-        *a1 = 5;
+        *a1 = 3;
         return SmoothRockHandlers;
     }
 

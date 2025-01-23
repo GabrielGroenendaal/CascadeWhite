@@ -481,7 +481,7 @@ extern int MainModule_GetPlayerClientID(MainModule *a1);
 // AI STUFF
 extern u32 AIGetMoveParam(TrainerAIEnv *a1, int a2, MoveField a3);
 extern u32 VM_Read32(void *vm);
-extern int Handler_SimulationDamage(ServerFlow *a1, int a2, int a3, int a4);
+extern int Handler_SimulationDamage(ServerFlow *a1, int a2, int a3, int a4, bool a5, bool a6);
 extern int AIConditionalJump(void *a1, unsigned int condition, int param1, int param2);
 
 // SHADOW TAG
@@ -531,6 +531,6 @@ extern void  wcharsncpy(wchar_t *pSrc, wchar_t *pDest, int length);
 extern void GFL_StrBufStoreString(StrBuf *strbuf, wchar_t *dest, int length);
 extern int BattleMon_GetComboMoveData(BattleMon *a1, _BYTE *a2, _WORD *a3);
 extern int GetComboMoveType(int a1, int a2);
-
+extern u8 Condition_GetTurnMax(void *a1);
 
 C_DECL_END
