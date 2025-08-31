@@ -1,13 +1,19 @@
 #include "codeinjection_new.h"
 #include "kPrint.h"
 
+extern u32 g_GameBeaconSys;
+STRUCT_DECLARE(GameData)
+#define GAME_DATA *(GameData **)(g_GameBeaconSys + 4)
+
+// Uses esdb_newBattle.yml
+
 extern "C"
 {
 
-    void THUMB_BRANCH_copyTrainerName(wchar_t *pDest, wchar_t *pSrc)
-    {
-        wcharsncpy(pSrc, pDest, 8);
-    }
+    // void THUMB_BRANCH_copyTrainerName(wchar_t *pDest, wchar_t *pSrc)
+    // {
+    //     wcharsncpy(pSrc, pDest, 8);
+    // }
 
     // void THUMB_BRANCH_ARM9_02008B74(wchar_t *pDest, wchar_t *pSrc){
     //     wcharsncpy(pSrc, pDest, 8);
@@ -57,7 +63,7 @@ extern "C"
 
     bool overrideContact(BattleMon *a1, MoveID a2)
     {
-        if (BattleMon_GetHeldItem(a1) == IT0293_SAFETY_GOGGLES || BattleMon_GetValue(a1, VALUE_EFFECTIVE_ABILITY) == ABIL142_OVERCOAT)
+        if (BattleMon_GetHeldItem(a1) == IT0293_SAFETY_GEAR || BattleMon_GetValue(a1, VALUE_EFFECTIVE_ABILITY) == ABIL142_OVERCOAT)
             return true;
         if (BattleMon_GetValue(a1, VALUE_EFFECTIVE_ABILITY) == ABIL089_IRON_FIST && getMoveFlag(a2, FLAG_PUNCH))
             return true;
@@ -751,6 +757,22 @@ extern "C"
         }
     }
 
+    int THUMB_BRANCH_HandlerStench(int a1, int a2, int a3)
+    {
+        int result; // r0
+
+        result = BattleEventVar_GetValue(VAR_ATTACKING_MON);
+        if (a3 == result)
+        {
+            result = BattleEventVar_GetValue(VAR_DEFAULT_EFFECT_CHANCE);
+            if (!result)
+            {
+                return BattleEventVar_RewriteValue(VAR_EFFECT_CHANCE, 20);
+            }
+        }
+        return result;
+    }
+
     int checkHigher(int a1, int a2)
     {
         if (a1 < a2)
@@ -1023,7 +1045,8 @@ extern "C"
         __int16 v7;                 // r0
         unsigned int currentTarget; // r4
         int currentTargetPosition;  // r1
-        BattleMon *BattleMon;       // r0
+        BattleMon *battleMon;       // r0
+        BattleMon *Ally;
         HandlerParam_RecoverHP *v6; // r5
         u8 v13[5];                  // [sp+4h] [bp-1Ch] BYREF
         int v14;                    // [sp+8h] [bp-18h]
@@ -1032,13 +1055,13 @@ extern "C"
         v14 = a4;
         if (a3 == NumTargets)
         {
-            BattleMon = Handler_GetBattleMon(a2, BattleEventVar_GetValue(VAR_MON_ID));
-            if (!BattleMon_IsFullHP(BattleMon))
+            battleMon = Handler_GetBattleMon(a2, BattleEventVar_GetValue(VAR_MON_ID));
+            if (!BattleMon_IsFullHP(battleMon))
             {
                 BattleHandler_PushRun(a2, EFFECT_ABILITYPOPUPIN, a3);
                 v6 = (HandlerParam_RecoverHP *)BattleHandler_PushWork(a2, EFFECT_RECOVERHP, currentTargetPosition);
                 v6->pokeID = currentTargetPosition;
-                v6->recoverHP = DivideMaxHPZeroCheck(BattleMon, 0x10u);
+                v6->recoverHP = DivideMaxHPZeroCheck(battleMon, 0x10u);
                 BattleHandler_PopWork(a2, v6);
                 BattleHandler_PushRun(a2, EFFECT_ABILITYPOPUPOUT, a3);
             }
@@ -1047,12 +1070,12 @@ extern "C"
             for (currentTarget = 0; currentTarget < NumTargets; currentTarget++)
             {
                 currentTargetPosition = v13[currentTarget];
-                BattleMon = Handler_GetBattleMon(a2, currentTargetPosition);
-                if (!BattleMon_IsFullHP(BattleMon))
+                Ally = Handler_GetBattleMon(a2, currentTargetPosition);
+                if (!BattleMon_IsFullHP(Ally) && Ally->ID != battleMon->ID)
                 {
                     v6 = (HandlerParam_RecoverHP *)BattleHandler_PushWork(a2, EFFECT_RECOVERHP, currentTargetPosition);
                     v6->pokeID = currentTargetPosition;
-                    v6->recoverHP = DivideMaxHPZeroCheck(BattleMon, 0x10u);
+                    v6->recoverHP = DivideMaxHPZeroCheck(Ally, 0x10u);
                     BattleHandler_PopWork(a2, v6);
                 }
             }
@@ -1682,6 +1705,150 @@ extern "C"
         return WindRiderHandlers;
     }
 
+    void HandlerQuickDraw(int a1, ServerFlow *a2, int a3)
+    {
+        HandlerParam_Message *v9;
+
+        unsigned __int8 ItemParam; // r0
+
+        if (a3 == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            if (RollEffectChance(20u))
+            {
+                if (BattleEventVar_RewriteValue(VAR_PRIORITY, 2))
+                {
+
+                    BattleHandler_PushRun(a2, EFFECT_ABILITYPOPUPIN, a3);
+                    v9 = (HandlerParam_Message *)BattleHandler_PushWork(a2, EFFECT_MESSAGE, a3);
+                    BattleHandler_StrSetup(&v9->str, 2u, 1246); // replace with the actual id
+                    BattleHandler_AddArg(&v9->str, a3);
+                    BattleHandler_PopWork(a2, v9);
+                    BattleHandler_PushRun(a2, EFFECT_ABILITYPOPUPOUT, a3);
+                }
+            }
+        }
+    }
+    ABILITY_TRIGGERTABLE QuickDrawHandlers[] = {
+        {EVENT_CHECK_SPECIAL_PRIORITY, (ABILITY_HANDLER_FUNC)HandlerQuickDraw}, // 22
+    };
+
+    ABILITY_TRIGGERTABLE *THUMB_BRANCH_EventAddOwnTempo(_DWORD *a1)
+    {
+        *a1 = 1;
+        return QuickDrawHandlers;
+    }
+
+    bool SwitchedInThisTurn(ServerFlow *serverFlow, BattleMon *battleMon, int defendingSlot)
+    {
+        // int *ActionOrderAttackingMon;
+        // int *ActionOrderDefendingMon;
+        // // if (serverFlow->turnCount == 0) {
+        // //     for (u8 i = 0; i < 6; ++i) {
+        // //         if (g_BattleField->firstTurnMons[i] == battleMon->ID) {
+        // //             // A Pokémon that started the battle doesn't count as just switched in
+        // //             return 0;
+        // //         }
+        // //     }
+        // // }
+        // ActionOrderAttackingMon = ActionOrder_SearchByMonID(a1, AttackingMon->ID);
+        // ActionOrderDefendingMon = ActionOrder_SearchByMonID(a1, DefendingMon->ID);
+
+        // if (ActionOrderAttackingMon > ActionOrderDefendingMon)
+        // {
+        //     return true;
+        // }
+        // else
+        // {
+        //     return false;
+        // }
+        unsigned int v11[6];
+        return !battleMon->TurnCount && !Handler_GetThisTurnAction(serverFlow, defendingSlot, v11);
+    }
+
+    void HandlerStakeout(BattleEventItem *item, ServerFlow *serverFlow, u32 pokemonSlot, u32 *work)
+    {
+        if (pokemonSlot == BattleEventVar_GetValue(VAR_ATTACKING_MON))
+        {
+            BattleMon *attackingMon = Handler_GetBattleMon(serverFlow, pokemonSlot);
+
+            u32 defendingSlot = BattleEventVar_GetValue(VAR_DEFENDING_MON);
+            BattleMon *defendingMon = Handler_GetBattleMon(serverFlow, defendingSlot);
+
+            if (SwitchedInThisTurn(serverFlow, defendingMon, defendingSlot))
+            {
+                BattleEventVar_MulValue(VAR_MOVE_POWER_RATIO, 8192);
+            }
+        }
+    }
+    ABILITY_TRIGGERTABLE StakeoutHandlers[]{
+        {EVENT_MOVE_POWER, (ABILITY_HANDLER_FUNC)HandlerStakeout},
+    };
+
+    ABILITY_TRIGGERTABLE *THUMB_BRANCH_EventAddFrisk(_DWORD *a1)
+    {
+        *a1 = 1;
+        return StakeoutHandlers;
+    }
+
+    void HandlerMagician(BattleEventItem *item, ServerFlow *serverFlow, u32 pokemonSlot, u32 *work)
+    {
+        if (pokemonSlot == BattleEventVar_GetValue(VAR_ATTACKING_MON))
+        {
+            BattleMon *currentMon = Handler_GetBattleMon(serverFlow, pokemonSlot);
+            if (!*work)
+            {
+                u32 targetSlot = BattleEventVar_GetValue(VAR_TARGET_MON_ID);
+                if (targetSlot != 31)
+                {
+                    BattleMon *targetMon = Handler_GetBattleMon(serverFlow, targetSlot);
+                    if (BattleMon_GetHeldItem(targetMon))
+                    {
+                        if (!HandlerCommon_CheckIfCanStealPokeItem(serverFlow, pokemonSlot, targetSlot))
+                        {
+                            BattleHandler_PushRun(serverFlow, EFFECT_ABILITYPOPUPIN, pokemonSlot);
+
+                            if (BattleMon_GetHeldItem(currentMon) == IT_NULL)
+                            {
+                                HandlerParam_SwapItem *swapItem;
+                                swapItem = (HandlerParam_SwapItem *)BattleHandler_PushWork(serverFlow, EFFECT_SWAPITEM, pokemonSlot);
+                                swapItem->pokeID = targetSlot;
+                                BattleHandler_StrSetup(&swapItem->exStr, 2u, 1057);
+                                BattleHandler_AddArg(&swapItem->exStr, pokemonSlot);
+                                BattleHandler_AddArg(&swapItem->exStr, targetSlot);
+                                ItemID heldItem = (ItemID)BattleMon_GetHeldItem(targetMon);
+                                BattleHandler_AddArg(&swapItem->exStr, heldItem);
+                                BattleHandler_PopWork(serverFlow, swapItem);
+                            }
+                            else
+                            {
+                                HandlerParam_SetItem *setItem;
+                                setItem = (HandlerParam_SetItem *)BattleHandler_PushWork(serverFlow, EFFECT_SET_HELD_ITEM, pokemonSlot);
+                                setItem->pokeID = targetSlot;
+                                setItem->itemID = 0;
+                                BattleHandler_StrSetup(&setItem->exStr, 2u, 1300); // Change the Text for this!
+                                BattleHandler_AddArg(&setItem->exStr, pokemonSlot);
+                                BattleHandler_AddArg(&setItem->exStr, targetSlot);
+                                BattleHandler_AddArg(&setItem->exStr, BattleMon_GetHeldItem(targetMon));
+                                BattleHandler_PopWork(serverFlow, setItem);
+                            }
+
+                            BattleHandler_PushRun(serverFlow, EFFECT_ABILITYPOPUPOUT, pokemonSlot);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ABILITY_TRIGGERTABLE PickpocketHandlers[]{
+        {EVENT_DAMAGE_PROCESSING_START, (ABILITY_HANDLER_FUNC)HandlerThiefStart},
+        {EVENT_DAMAGE_PROCESSING_END_HIT_REAL, (ABILITY_HANDLER_FUNC)HandlerMagician},
+    };
+    ABILITY_TRIGGERTABLE *THUMB_BRANCH_EventAddPickpocket(_DWORD *a1)
+    {
+        *a1 = 2;
+        return PickpocketHandlers;
+    }
+
     //
     // Pixilate
     //
@@ -1710,7 +1877,7 @@ extern "C"
         {EVENT_MOVE_PARAM, (ABILITY_HANDLER_FUNC)HandlerPixilateType}, // 22
         {EVENT_ATTACKER_POWER, (ABILITY_HANDLER_FUNC)HandlerAtePower}};
 
-    ABILITY_TRIGGERTABLE *THUMB_BRANCH_EventAddAnticipation(_DWORD *a1)
+    ABILITY_TRIGGERTABLE *THUMB_BRANCH_EventAddMagmaArmor(_DWORD *a1)
     {
         *a1 = 2;
         return PixilateHandlers;
@@ -1802,6 +1969,333 @@ extern "C"
     {
         *a1 = 3;
         return NormalizeHandlers;
+    }
+
+    int GetTypeEffectivenessAlteredSacredSword(int a1, int a2)
+    {
+        TypeEffectiveness result;
+        int v3;
+
+        if (a1 == TYPE_NONE || a2 == TYPE_NONE)
+        {
+            result = EFFECTIVENESS_1;
+            return result;
+        }
+
+        if (a1 == TYPE_FIGHTING)
+        {
+            v3 = SacredSwordTypeChart[a1][a2];
+            // //k::printf("\nFreezeDryChart entered\nv3 = %d\na1 = %d\na2 = %d\n\n", v3, a1, a2);
+        }
+        else
+        {
+            v3 = normalTypeChart[a1][a2];
+        }
+
+        switch (v3)
+        {
+        case 0:
+            result = EFFECTIVENESS_IMMUNE;
+            break;
+        case 2:
+            result = EFFECTIVENESS_1_2;
+            break;
+        case 4:
+            result = EFFECTIVENESS_1;
+            break;
+        case 8:
+            result = EFFECTIVENESS_2;
+            break;
+        default:
+            return 0;
+        }
+        return result;
+    }
+
+    int GetTypeEffectivenessAltered(int a1, int a2)
+    {
+        TypeEffectiveness result;
+        int v3;
+        PlayerState *playerState;
+        int zoneId;
+        playerState = GameData_GetPlayerState(*(GameData **)(g_GameBeaconSys + 4));
+        zoneId = PlayerState_GetZoneID(playerState);
+
+        if (a1 == TYPE_NONE || a2 == TYPE_NONE)
+        {
+            result = EFFECTIVENESS_1;
+            return result;
+        }
+
+        if (a1 == TYPE_ICE)
+        {
+            v3 = FreezeDryTypeChart[a1][a2];
+            // //k::printf("\nFreezeDryChart entered\nv3 = %d\na1 = %d\na2 = %d\n\n", v3, a1, a2);
+        }
+        else if (a1 == TYPE_FIGHTING)
+        {
+            if (a2 == TYPE_FLYING)
+            {
+                v3 = SkyUppercutTypeChart[a1][a2];
+            }
+            if (zoneId == 121)
+            {
+                v3 = opelucidTypeChart[a1][a2];
+            }
+            else
+            {
+                v3 = SkyUppercutTypeChart[a1][a2];
+            }
+            // //k::printf("\nSkyUppercutChart entered\nv3 = %d\na1 = %d\na2 = %d\n\n", v3, a1, a2);
+        }
+
+        else if (a1 == TYPE_POISON)
+        {
+            v3 = CorrosionTypeChart[a1][a2];
+        }
+        else
+        {
+            v3 = normalTypeChart[a1][a2];
+        }
+
+        switch (v3)
+        {
+        case 0:
+            result = EFFECTIVENESS_IMMUNE;
+            break;
+        case 2:
+            result = EFFECTIVENESS_1_2;
+            break;
+        case 4:
+            result = EFFECTIVENESS_1;
+            break;
+        case 8:
+            result = EFFECTIVENESS_2;
+            break;
+        default:
+            return 0;
+        }
+        return result;
+    }
+
+    int GetTypeEffectivenessVsMonAltered(int a1, int a2)
+    {
+        int TypeEffectiveness; // r4
+        int v6;                // r0
+        int v7;
+        int v8;
+        v8 = PokeTypePair_GetType1(a2);
+        v7 = PokeTypePair_GetType2(a2);
+
+        if (PokeTypePair_IsMonotype(a2))
+        {
+            return GetTypeEffectivenessAltered(a1, v8);
+        }
+        TypeEffectiveness = GetTypeEffectivenessAltered(a1, v8);
+        v6 = GetTypeEffectivenessAltered(a1, v7);
+        return GetTypeEffectivenessMultiplier(TypeEffectiveness, v6);
+    }
+
+    int GetTypeEffectivenessVsMonAlteredSacredSword(int a1, int a2)
+    {
+        int TypeEffectiveness; // r4
+        int v6;                // r0
+        int v7;
+        int v8;
+        v8 = PokeTypePair_GetType1(a2);
+        v7 = PokeTypePair_GetType2(a2);
+
+        if (PokeTypePair_IsMonotype(a2))
+        {
+            return GetTypeEffectivenessAlteredSacredSword(a1, v8);
+        }
+        TypeEffectiveness = GetTypeEffectivenessAlteredSacredSword(a1, v8);
+        v6 = GetTypeEffectivenessAlteredSacredSword(a1, v7);
+        return GetTypeEffectivenessMultiplier(TypeEffectiveness, v6);
+    }
+    
+    int  THUMB_BRANCH_Tables_IsMoldBreakerAffectedAbility(int a1)
+    {
+        return Tables_CheckTableElems(a1, MOLD_BREAKER_AFFECTED_ABILITIES, 46u);
+    }
+
+    unsigned int HandlerAnticipationDodge(int a1, ServerFlow *a2, int a3)
+    {
+        unsigned int result; // r0
+        int moveId;
+        Types type;
+        BattleMon *defender;
+        BattleMon *attacker;
+        int defenderId;
+        int v18;
+        int typeEffectiveness;
+        int PokeType;
+
+        defenderId = BattleEventVar_GetValue(VAR_DEFENDING_MON);
+
+        if (a3 == defenderId)
+        {
+            moveId = BattleEventVar_GetValue(VAR_MOVE_ID);
+            type = (Types)PML_MoveGetType(moveId);
+            defender = Handler_GetBattleMon(a2, defenderId);
+            PokeType = BattleMon_GetPokeType(defender);
+            attacker = Handler_GetBattleMon(a2, BattleEventVar_GetValue(VAR_ATTACKING_MON));
+
+            // Weather Ball Checks
+            if (moveId == MOVE311_WEATHER_BALL || moveId == MOVE271_WEATHER_CRASH)
+            {
+                v18 = BattleField_GetWeather();
+
+                if (v18 == 1)
+                {
+                    type = TYPE_FIRE;
+                }
+                else if (v18 == 2)
+                {
+                    type = TYPE_WATER;
+                }
+                else if (v18 == 3)
+                {
+                    type = TYPE_ICE;
+                }
+                else if (v18 == 4)
+                {
+                    type = TYPE_ROCK;
+                }
+            }
+
+            if (moveId == MOVE267_NATURE_POWER)
+            {
+                int BattleTerrain = Handler_GetBattleTerrain(BattleServer_GetServerFlow(a2->mainModule->server));
+
+                // //k::printf("\n\nThe Battle Terrain is %d\n\n", BattleTerrain);
+
+                if (BattleTerrain == 5u)
+                {
+                    moveId = 402;
+                }
+                else if (BattleTerrain == 11u)
+                {
+                    moveId = 89;
+                }
+                else if (BattleTerrain == 0xCu)
+                {
+                    moveId = 56;
+                }
+                else if (BattleTerrain == 7u)
+                {
+                    moveId = 59;
+                }
+                else if (BattleTerrain == 9u)
+                {
+                    moveId = 426;
+                }
+                else if (BattleTerrain == 0xAu)
+                {
+                    moveId = 157;
+                }
+                else if (BattleTerrain == 0xDu)
+                {
+                    moveId = 58;
+                }
+                else
+                {
+                    moveId = 161;
+                }
+                type = (Types)PML_MoveGetType(moveId);
+            }
+
+            if (moveId == MOVE363_NATURAL_GIFT && PML_ItemIsBerry(BattleMon_GetHeldItem(attacker)))
+            {
+                type = (Types)ItemGetParam(BattleMon_GetHeldItem(attacker), ITSTAT_NATURAL_GIFT_TYPE);
+            }
+
+            if (BattleMon_GetValue(attacker, VALUE_EFFECTIVE_ABILITY) == ABIL012_GALVANIZE && type == TYPE_NORMAL)
+            {
+                type = (Types)TYPE_ELECTRIC;
+            }
+            if (BattleMon_GetValue(attacker, VALUE_EFFECTIVE_ABILITY) == ABIL048_REFRIGERATE && type == TYPE_NORMAL)
+            {
+                type = (Types)TYPE_ICE;
+            }
+            if (BattleMon_GetValue(attacker, VALUE_EFFECTIVE_ABILITY) == ABIL060_AERILATE && type == TYPE_NORMAL)
+            {
+                type = (Types)TYPE_FLYING;
+            }
+            if (BattleMon_GetValue(attacker, VALUE_EFFECTIVE_ABILITY) == ABIL040_PIXILATE && type == TYPE_NORMAL)
+            {
+                type = (Types)TYPE_FAIRY;
+            }
+            if (moveId == MOVE327_SKY_UPPERCUT || moveId == MOVE357_FREEZE_DRY || BattleMon_GetValue(attacker, VALUE_EFFECTIVE_ABILITY) == ABIL007_CORROSION)
+            {
+                typeEffectiveness = GetTypeEffectivenessVsMonAltered(type, PokeType);
+                // //k::printf("\n 2. TypeEffectivenessVsMon is: %d for Move %d \n", TypeEffectivenessVsMon, a4);
+            }
+            else if (moveId == MOVE533_SACRED_SWORD)
+            {
+                typeEffectiveness = GetTypeEffectivenessVsMonAlteredSacredSword(type, PokeType);
+            }
+            else
+            {
+                typeEffectiveness = GetTypeEffectivenessVsMon(type, PokeType);
+            }
+
+            if (typeEffectiveness >= 4)
+            {
+                result = BattleEventVar_GetValue(VAR_ACCURACY);
+                if (result > 0x32)
+                {
+                    return BattleEventVar_RewriteValue(VAR_ACCURACY, 50);
+                }
+            }
+        }
+        return result;
+    }
+
+    ABILITY_TRIGGERTABLE AnticipationHandlers[] = {
+        {EVENT_SWITCH_IN, (ABILITY_HANDLER_FUNC)HandlerAnticipation},            // 22
+        {EVENT_AFTER_ABILITY_CHANGE, (ABILITY_HANDLER_FUNC)HandlerAnticipation}, // 22
+        {EVENT_MOVE_ACCURACY, (ABILITY_HANDLER_FUNC)HandlerAnticipationDodge}};
+
+    ABILITY_TRIGGERTABLE *THUMB_BRANCH_EventAddAnticipation(_DWORD *a1)
+    {
+        *a1 = 3;
+        return AnticipationHandlers;
+    }
+
+    void HandlerSavant(int a1, ServerFlow *serverFlow, int pokemonSlot)
+    {
+        if (pokemonSlot == BattleEventVar_GetValue(VAR_MON_ID))
+        {
+            BattleMon *currentMon = Handler_GetBattleMon(serverFlow, pokemonSlot);
+
+            MoveParam params;
+            ServerEvent_GetMoveParam(serverFlow, BattleEventVar_GetValue(VAR_MOVE_ID), (int)currentMon, &params);
+
+            if (params.moveType != TYPE_NONE &&
+                params.moveType != BattleMon_GetPokeType(currentMon))
+            {
+                BattleHandler_PushRun(serverFlow, EFFECT_ABILITYPOPUPIN, pokemonSlot);
+
+                HandlerParam_ChangeType *changeType;
+                changeType = (HandlerParam_ChangeType *)BattleHandler_PushWork(serverFlow, EFFECT_CHANGE_TYPE, pokemonSlot);
+                changeType->nextType = PokeTypePair_MakeMonotype(params.moveType);
+                changeType->monID = pokemonSlot;
+                BattleHandler_PopWork(serverFlow, changeType);
+
+                BattleHandler_PushRun(serverFlow, EFFECT_ABILITYPOPUPOUT, pokemonSlot);
+            }
+        }
+    }
+
+    ABILITY_TRIGGERTABLE SavantHandlers[] = {
+        {EVENT_MOVE_EXECUTE_CHECK2, (ABILITY_HANDLER_FUNC)HandlerAnticipation}, // 22
+    };
+
+    ABILITY_TRIGGERTABLE *THUMB_BRANCH_EventAddBigPecks(_DWORD *a1)
+    {
+        *a1 = 1;
+        return SavantHandlers;
     }
 
     void THUMB_BRANCH_HandleTrace(int a1, ServerFlow *a2, unsigned int tracePokemonID, _DWORD *a4)
@@ -1960,6 +2454,22 @@ extern "C"
     {
         *a1 = 2;
         return JustifiedHandlers;
+    }
+
+    void THUMB_BRANCH_HandlerAnalytic(int a1, ServerFlow *a2, int a3)
+    {
+        unsigned __int16 Value; // r0
+        int v6;                 // r0
+
+        if (a3 == BattleEventVar_GetValue(VAR_ATTACKING_MON))
+        {
+            Value = BattleEventVar_GetValue(VAR_MOVE_ID);
+
+            if (HandlerCommon_IsMonLastInTurnOrder(a2, a3))
+            {
+                BattleEventVar_MulValue(VAR_MOVE_POWER_RATIO, 5325);
+            }
+        }
     }
 
     int THUMB_BRANCH_SAFESTACK_ServerControl_MoveExecuteCheck1(ServerFlow *a1, BattleMon *a2, int a3, int a4)

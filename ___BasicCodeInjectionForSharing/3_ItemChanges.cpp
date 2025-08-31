@@ -1,12 +1,14 @@
 #include "codeinjection_new.h"
 #include "kPrint.h"
 
+// Uses esdb_newBattle.yml
+
 extern "C"
 {
-    int THUMB_BRANCH_sub_2009A0C(int *a1)
-{
-  return *(a1 + 419);
-}
+//     int THUMB_BRANCH_sub_2009A0C(int *a1)
+// {
+//   return *(a1 + 419);
+// }
 
     bool THUMB_BRANCH_SAFESTACK_BattleMon_CheckIfMoveCondition(BattleMon *a1, MoveCondition a2)
     {
@@ -1246,38 +1248,38 @@ extern "C"
 
     ITEM_TRIGGERTABLE IcyRockHandlers[] = {
         {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerIcyRock},                 // 24
-        {EVENT_AFTER_ITEM_EQUIP, (ITEM_HANDLER_FUNC)HandlerIcyRock},          // 24
+       // {EVENT_AFTER_ITEM_EQUIP, (ITEM_HANDLER_FUNC)HandlerIcyRock},          // 24
         {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerIcyRockUse},               // 24
         {EVENT_WEATHER_REACTION, (ITEM_HANDLER_FUNC)HandlerSnowCloakWeather}, // 24
     };
 
     ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddIcyRock(_DWORD *a1)
     {
-        *a1 = 4;
+        *a1 = 3;
         return IcyRockHandlers;
     }
 
     ITEM_TRIGGERTABLE HeatRockHandlers[] = {
         {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerHeatRock},        // 24
-        {EVENT_AFTER_ITEM_EQUIP, (ITEM_HANDLER_FUNC)HandlerHeatRock}, // 24
+        //{EVENT_AFTER_ITEM_EQUIP, (ITEM_HANDLER_FUNC)HandlerHeatRock}, // 24
         {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerHeatRockUse},      // 24
     };
 
     ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddHeatRock(_DWORD *a1)
     {
-        *a1 = 3;
+        *a1 = 2;
         return HeatRockHandlers;
     }
 
     ITEM_TRIGGERTABLE DampRockHandlers[] = {
         {EVENT_SWITCH_IN, (ITEM_HANDLER_FUNC)HandlerDampRock},        // 24
-        {EVENT_AFTER_ITEM_EQUIP, (ITEM_HANDLER_FUNC)HandlerDampRock}, // 24
+        //{EVENT_AFTER_ITEM_EQUIP, (ITEM_HANDLER_FUNC)HandlerDampRock}, // 24
         {EVENT_USE_ITEM, (ITEM_HANDLER_FUNC)HandlerDampRockUse},      // 24
     };
 
     ITEM_TRIGGERTABLE *THUMB_BRANCH_EventAddDampRock(_DWORD *a1)
     {
-        *a1 = 3;
+        *a1 = 2;
         return DampRockHandlers;
     }
 

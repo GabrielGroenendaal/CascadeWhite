@@ -1,12 +1,15 @@
 #include "codeinjection_new.h"
 #include "kPrint.h"
 
+// Uses esdb_NewBattle.yml
+
+
 extern "C"
 {
-    int THUMB_BRANCH_sub_200AF5C(int *a1)
-    {
-        return *(a1 + 672);
-    }
+    // int THUMB_BRANCH_sub_200AF5C(int *a1)
+    // {
+    //     return *(a1 + 672);
+    // }
 
     bool PersonalCheckIfMoveCondition(BattleMon *a1, MoveCondition a2)
     {
@@ -105,20 +108,24 @@ extern "C"
             {
                 messageId = 1270;
             }
+            else if (BattleEventVar_GetValue(VAR_MOVE_ID) == MOVE112_BARRIER){
+                messageId = 1291; 
+            }
             else
             {
                 messageId = 1273;
             }
 
+            k::Printf("\nWe made it into this handler at least?\n");
             v6 = (HandlerParam_Message *)BattleHandler_PushWork(a2, EFFECT_MESSAGE, (int)a3);
             BattleHandler_StrSetup(&v6->str, 2u, messageId);
             BattleHandler_AddArg(&v6->str, (int)a3);
-            BattleHandler_PopWork(a2, v5);
+            BattleHandler_PopWork(a2, v6);
 
-            // v5 = (HandlerParam_SetConditionFlag *)BattleHandler_PushWork(a2, EFFECT_SET_CONDITION_FLAG, (int)a3);
-            // v5->monID = (int)a3;
-            // v5->flag = CONDITIONFLAG_DEFENSECURL;
-            // BattleHandler_PopWork(a2, v5);
+            v5 = (HandlerParam_SetConditionFlag *)BattleHandler_PushWork(a2, EFFECT_SET_CONDITION_FLAG, (int)a3);
+            v5->monID = (int)a3;
+            v5->flag = CONDITIONFLAG_DEFENSECURL;
+            BattleHandler_PopWork(a2, v5);
         }
     }
 
@@ -1748,7 +1755,7 @@ extern "C"
             {
                 v8 = 1225;
             }
-            else if (IsEqual(SubID, MOVE264_ALLURING_VOICE))
+            else if (IsEqual(SubID, MOVE377_ALLURING_VOICE))
             {
                 v8 = 1276;
             }

@@ -4,10 +4,13 @@
 
 // FIELD EFFECT EXPANSION
 
-extern "C" int THUMB_BRANCH_TrainerInfo_GetRegion(UnityTowerVisitor *a1)
-{
-  return a1->field_1A;
-};
+// Uses esdb_newBattle.yml
+
+
+// extern "C" int THUMB_BRANCH_TrainerInfo_GetRegion(UnityTowerVisitor *a1)
+// {
+//   return a1->field_1A;
+// };
 
 extern "C"
 {
@@ -1059,7 +1062,7 @@ extern "C"
             // if (DoesItemPreventHazardEffects(BattleMon_GetHeldItem(currentMon))) // Heavy-Duty Boots check
             //     return;
 
-            if (BattleMon_GetHeldItem(currentMon) == IT0293_SAFETY_GOGGLES || BattleMon_GetValue(currentMon, VALUE_EFFECTIVE_ABILITY) == ABIL142_OVERCOAT){
+            if (BattleMon_GetHeldItem(currentMon) == IT0293_SAFETY_GEAR || BattleMon_GetValue(currentMon, VALUE_EFFECTIVE_ABILITY) == ABIL142_OVERCOAT){
                 return;
             }
 
@@ -1123,7 +1126,7 @@ extern "C"
             }
             else
             {
-                           if (BattleMon_GetHeldItem(currentMon) == IT0293_SAFETY_GOGGLES || BattleMon_GetValue(currentMon, VALUE_EFFECTIVE_ABILITY) == ABIL142_OVERCOAT){
+                           if (BattleMon_GetHeldItem(currentMon) == IT0293_SAFETY_GEAR || BattleMon_GetValue(currentMon, VALUE_EFFECTIVE_ABILITY) == ABIL142_OVERCOAT){
                 return;
             }
 
@@ -1162,7 +1165,7 @@ extern "C"
         if (currentSide == GetSideFromMonID(currentSlot))
         {
             BattleMon *currentMon = Handler_GetBattleMon(serverFlow, currentSlot);
-                        if (BattleMon_GetHeldItem(currentMon) == IT0293_SAFETY_GOGGLES || BattleMon_GetValue(currentMon, VALUE_EFFECTIVE_ABILITY) == ABIL142_OVERCOAT){
+                        if (BattleMon_GetHeldItem(currentMon) == IT0293_SAFETY_GEAR || BattleMon_GetValue(currentMon, VALUE_EFFECTIVE_ABILITY) == ABIL142_OVERCOAT){
                 return;
             }
 
@@ -1250,7 +1253,7 @@ extern "C"
         if (currentSide == GetSideFromMonID(currentSlot))
         {
             BattleMon *currentMon = Handler_GetBattleMon(serverFlow, currentSlot);
-                        if (BattleMon_GetHeldItem(currentMon) == IT0293_SAFETY_GOGGLES || BattleMon_GetValue(currentMon, VALUE_EFFECTIVE_ABILITY) == ABIL142_OVERCOAT){
+                        if (BattleMon_GetHeldItem(currentMon) == IT0293_SAFETY_GEAR || BattleMon_GetValue(currentMon, VALUE_EFFECTIVE_ABILITY) == ABIL142_OVERCOAT){
                 return;
             }
 

@@ -6,6 +6,8 @@
 #define _DWORD unsigned int
 #define _QWORD unsigned long
 
+// Uses ESDB_For_LegendaryPokemon3.yml
+
 bool IsEqual(int a1, int a2)
 {
     char *c1 = (char *)&a1;
@@ -24,10 +26,6 @@ unsigned short int &LOWORD(unsigned int &x)
     return *(reinterpret_cast<unsigned short int *>(&x) + 0);
 }
 
-extern "C" u32 THUMB_BRANCH_getSizeofPokeBox()
-{
-  return 4080;
-}
 
 
 extern "C"

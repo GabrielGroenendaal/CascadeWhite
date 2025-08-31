@@ -265,7 +265,7 @@ extern int j_j_BTL_SICKEVENT_CheckNotEffectByType(ServerFlow *a1, BattleMon *a2)
 extern int HandlerCommon_CheckTargetPokeID(int a1);
 extern BattleMon *Handler_GetPokeParam(ServerFlow *a1, int a2);
 extern FaintRecord *Handler_GetActionRecord(ServerFlow *a1);
-extern BattleMon *PokeCon_GetPokeParam(PokeCon *a1, int a2);
+// extern BattleMon *PokeCon_GetPokeParam(PokeCon *a1, int a2);
 
 // New ESDB
 extern int j_j_Condition_CheckUnaffectedByType(ServerFlow *a1, BattleMon *a2);
@@ -273,7 +273,7 @@ extern int HandlerCommon_CheckTargetMonID(int a1);
 extern BattleMon *Handler_GetBattleMon(ServerFlow *a1, int a2);
 extern MainModule *BtlvEffectMain_GetMainModule();
 extern FaintRecord *Handler_GetFaintRecord(ServerFlow *a1);
-extern BattleMon *PokeCon_GetBattleMon(PokeCon *a1, int a2);
+//extern BattleMon *PokeCon_GetBattleMon(PokeCon *a1, int a2);
 extern bool Handler_CheckFloating(ServerFlow *a1, int a2);
 extern bool ServerControl_CheckFloating(ServerFlow *a1, BattleMon *a2, int a3);
 
@@ -532,5 +532,28 @@ extern void GFL_StrBufStoreString(StrBuf *strbuf, wchar_t *dest, int length);
 extern int BattleMon_GetComboMoveData(BattleMon *a1, _BYTE *a2, _WORD *a3);
 extern int GetComboMoveType(int a1, int a2);
 extern u8 Condition_GetTurnMax(void *a1);
+
+extern int PokeTypePair_MakeMonotype(__int16 a1 );
+extern void HandlerAnticipation(int a1, _DWORD *a2, unsigned int a3, int a4);
+extern int BattleMon_CanBattle(BattleMon *a1);
+extern BattleStyle MainModule_GetBattleStyle(MainModule *a1);
+extern int MainModule_GetNumBattlePositionsOfClient(MainModule *a1, int a2);
+extern unsigned int BattleMon_IsIllusionEnabled(BattleMon *a1);
+extern PartyPkm * BattleMon_GetViewSrcData(BattleMon *a1);
+extern void BattleMon_SetIllusion(BattleMon *result, PartyPkm *a2);
+extern void BattleMon_RemoveIllusion(BattleMon *result);
+extern PartyPkm * BattleMon_GetSrcData(BattleMon *a1);
+extern unsigned int PersonalPickBestMonToSwitchInto(BtlClientWk *a1, u8 *a2, unsigned int a3, BattleMon *a4, int flag);
+extern int MainModule_BattlePosToClientID(MainModule *a1, int a2);
+extern BattleMon* SwitchAI_DetermineOpponent(void *a1, __int16 a2);
+extern unsigned int MainModule_GetClientPokePos(MainModule *a1, int clientID, int partyIndex);
+extern BattleMon * PokeCon_GetBattleMon(void *a1, int a2); 
+extern int SwitchAI_CheckReserve(BtlClientWk *a1, int a2);
+extern int GetNumBattleReadyPartyMons(BtlClientWk *a1, u8 *a2);
+extern bool HandlerCommon_IsMonLastInTurnOrder(ServerFlow *a1, int a2);
+extern int Handler_GetThisTurnAction(ServerFlow *a1, int a2, _DWORD *a3);
+extern int HandlerThiefStart(int a1, ServerFlow *a2, int a3, int *a4);
+extern bool Handler_IsSideEffectActive(ServerFlow *a1, int a2, int a3);
+extern int Tables_CheckTableElems(int a1, unsigned __int16 *a2, unsigned int a3);
 
 C_DECL_END

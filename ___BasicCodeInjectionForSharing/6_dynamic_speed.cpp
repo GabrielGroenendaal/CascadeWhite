@@ -18,6 +18,9 @@ u8 interruptActionFlag = 0;
 // - Used in [PokeSet_SortBySpeedDynamic] & [BattleHandler_SendLast]
 u8 sendLastSlots[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
+// Uses x.yml
+
+
 extern "C" {
 	
 	void SwapPokemonOrder(ActionOrderWork* actionOrder, u16* speedStats, u8* priority, u8* eventPriority, u8 slowIdx, u8 fastIdx)

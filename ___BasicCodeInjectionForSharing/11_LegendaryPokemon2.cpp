@@ -6,16 +6,19 @@
 #define _DWORD unsigned int
 #define _QWORD unsigned long
 
+// Uses esdb_newBattle.yml
 
 // extern "C" int THUMB_BRANCH_getSizeofTrainerData()
 // {
 //   return 176;
 // };
 
-extern "C" int THUMB_BRANCH_sub_20099E0(int* a1)
-{
-  return *(a1 + 420);
-};
+// extern "C" int THUMB_BRANCH_sub_20099E0(int* a1)
+// {
+//   return *(a1 + 420);
+// };
+
+// Uses esdb_newBattle.yml
 
 
 bool IsEqual(int a1, int a2)

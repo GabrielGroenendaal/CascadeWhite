@@ -19,10 +19,7 @@ bool IsEqual(int a1, int a2)
     return true;
 }
 
-extern "C" u32 THUMB_BRANCH_getSizeofBox()
-{
-  return 4080;
-};
+// Uses ESDB_For_LegendaryPokemon.yml
 
 extern "C"
 {
@@ -914,7 +911,7 @@ extern "C"
                 trainerId = a1->mainModule->btlSetup->TrainerSetups[1]->TrID;
                 trainerClass = a1->mainModule->btlSetup->TrainerSetups[1]->TrClass;
                 // // k::Printf("\nTrainerId is %d and trainerClass is %d\n", trainerId, trainerClass);
-                if (trainerId == 491 || trainerClass == 2 || trainerClass == 90 || trainerClass == 91)
+                if (trainerId == 491)
                 {
                     if (a2 == 1)
                     {

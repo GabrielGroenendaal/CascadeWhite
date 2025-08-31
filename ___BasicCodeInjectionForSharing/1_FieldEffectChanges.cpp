@@ -5,12 +5,15 @@ extern u32 g_GameBeaconSys;
 STRUCT_DECLARE(GameData)
 #define GAME_DATA *(GameData **)(g_GameBeaconSys + 4)
 
+// Uses esdb_newBattle.yml
+
+
 extern "C"
 {
-    void THUMB_BRANCH_copyTrainerNameFromStrbuf(wchar_t *pDest, StrBuf *pSrc)
-    {
-        GFL_StrBufStoreString(pSrc, pDest, 8);
-    }
+    // void THUMB_BRANCH_copyTrainerNameFromStrbuf(wchar_t *pDest, StrBuf *pSrc)
+    // {
+    //     GFL_StrBufStoreString(pSrc, pDest, 8);
+    // }
 
     bool PersonalCheckIfMoveCondition(BattleMon *a1, MoveCondition a2)
     {
@@ -23,6 +26,7 @@ extern "C"
         {
             return (a1->Conditions[a2] & 7) != 0;
         }
+        int i = 0x70;
     }
 
     void CreateSpikes(
